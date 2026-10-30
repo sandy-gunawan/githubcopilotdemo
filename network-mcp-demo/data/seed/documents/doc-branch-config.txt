@@ -1,0 +1,12 @@
+! SIMULATION ONLY - snapshot sumber, bukan konfigurasi live
+hostname BR-SW-01
+interface GigabitEthernet0/1
+ description UPLINK-TO-BR-RTR-01
+ switchport access vlan 99
+ no shutdown
+interface GigabitEthernet0/2
+ description OFFICE-USERS
+ switchport access vlan 10
+ no shutdown
+! Perubahan model interface tidak menulis ulang snapshot ini secara otomatis.
+! Tidak ada password, community string atau kredensial dalam data dummy.

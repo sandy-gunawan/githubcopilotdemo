@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Ringkasan 8 skill GitHub Copilot di Banking Skills Lab: fungsi, demo, sumber, dan cara install di VS Code.">
+  <title>Skill yang dipakai | Banking Skills Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="skills-reference">
+  <a class="skip-link" href="#main">Langsung ke isi</a>
+  <header class="topbar">
+    <a class="quiet-link" href="index.html#overview">&#8592; Kembali ke workshop</a>
+    <span class="pill">BANKING SKILLS LAB</span>
+  </header>
+  <main id="main" class="skills-reference-main" tabindex="-1">
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">RINGKASAN SKILL</span>
+        <h1>Skill apa yang dipakai,<br>dan buat apa?</h1>
+        <p>Bayangkan prompt itu pesanan kita, sedangkan skill adalah bekal cara kerjanya. Isinya petunjuk, dan bisa juga contoh, template, atau script. Copilot membacanya saat dibutuhkan untuk mengerjakan tugas tertentu.</p>
+      </div>
+      <a class="button secondary" href="index.html#setup">Cara install di workshop &#8594;</a>
+    </div>
+    <div class="concept-bar">
+      <div><strong>Bahan dari kita</strong><span>Catatan rapat, cerita sistem, atau kronologi.</span></div>
+      <span class="concept-plus" aria-hidden="true">&#8594;</span>
+      <div><strong>Prompt + skill</strong><span>Kita minta hasilnya; skill membantu cara mengerjakannya.</span></div>
+      <span class="concept-plus" aria-hidden="true">&#8594;</span>
+      <div><strong>Hasil untuk dicek</strong><span>Dokumen, diagram, atau slide. Bukan otomatis pasti benar.</span></div>
+    </div>
+    <div class="section-heading">
+      <div><span class="eyebrow">TOTAL 8 SKILL</span><h2>7 dari Awesome Copilot + 1 buatan workshop.</h2></div>
+    </div>
+    <div class="skills-reference-grid">
+      <article class="panel" data-skill="meeting-minutes">
+        <span class="source-tag">Awesome Copilot</span>
+        <h2>Rapikan notulen rapat</h2>
+        <p class="skill-reference-name">meeting-minutes</p>
+        <p>Mengubah catatan atau transkrip rapat menjadi notulen: ringkasan, keputusan, tugas, PIC, tenggat, dan hal yang belum diputuskan.</p>
+        <p><strong>Di workshop:</strong> obrolan rapat dummy jadi notulen. Skill Word di bawah membantu membuat file .docx-nya.</p>
+        <div class="skill-reference-links"><a href="index.html#minutes">Coba demo notulen</a><a href="https://github.com/github/awesome-copilot/tree/0fe6545b950671641b2b14b44eb56678fea6c6b4/skills/meeting-minutes" target="_blank" rel="noopener noreferrer">Lihat sumber &#8599;</a></div>
+      </article>
+      <article class="panel" data-skill="incident-postmortem">
+        <span class="source-tag">Awesome Copilot</span>
+        <h2>Susun laporan gangguan</h2>
+        <p class="skill-reference-name">incident-postmortem</p>
+        <p>Membantu menjelaskan kejadian setelah gangguan selesai: kronologi, dampak, penyebab dari bukti, dan tindak lanjut. Fokusnya belajar dan memperbaiki proses, bukan menyalahkan orang.</p>
+        <p><strong>Di workshop:</strong> cerita portal lambat jadi laporan gangguan. Skill diagram dan Word melengkapi hasilnya.</p>
+        <div class="skill-reference-links"><a href="index.html#incident">Coba demo gangguan</a><a href="https://github.com/github/awesome-copilot/tree/0fe6545b950671641b2b14b44eb56678fea6c6b4/skills/incident-postmortem" target="_blank" rel="noopener noreferrer">Lihat sumber &#8599;</a></div>
+      </article>
+      <article class="panel" data-skill="documentation-writer">
+        <span class="source-tag">Awesome Copilot</span>
+        <h2>Bikin dokumentasi yang mudah diikuti</h2>
+        <p class="skill-reference-name">documentation-writer</p>
+        <p>Membantu memilih susunan dan menulis dokumentasi sesuai pembaca dan tujuannya. Bisa untuk panduan kerja, tutorial, penjelasan, atau bahan referensi.</p>
+        <p><strong>Di workshop:</strong> aturan dan catatan operasional jadi panduan penanganan keluhan. Bukan sekadar merangkum chat.</p>
+        <div class="skill-reference-links"><a href="index.html#business">Coba demo panduan kerja</a><a href="https://github.com/github/awesome-copilot/tree/0fe6545b950671641b2b14b44eb56678fea6c6b4/skills/documentation-writer" target="_blank" rel="noopener noreferrer">Lihat sumber &#8599;</a></div>
+      </article>
+      <article class="panel" data-skill="draw-io-diagram-generator">
+        <span class="source-tag">Awesome Copilot</span>
+        <h2>Gambarkan alur dan hubungan sistem</h2>
+        <p class="skill-reference-name">draw-io-diagram-generator</p>
+        <p>Membuat atau mengubah diagram draw.io yang bisa diedit. Cocok untuk alur proses, hubungan komponen, dan urutan komunikasi antarbagian.</p>
+        <p><strong>Di workshop:</strong> dipakai untuk diagram proses bisnis, arsitektur, dan timeline gangguan. Gambar lalu dimasukkan ke dokumen.</p>
+        <div class="skill-reference-links"><a href="index.html#business">Lihat contoh diagram</a><a href="https://github.com/github/awesome-copilot/tree/0fe6545b950671641b2b14b44eb56678fea6c6b4/skills/draw-io-diagram-generator" target="_blank" rel="noopener noreferrer">Lihat sumber &#8599;</a></div>
+      </article>
+      <article class="panel" data-skill="architecture-blueprint-generator">
+        <span class="source-tag">Awesome Copilot</span>
+        <h2>Jelaskan arsitektur aplikasi</h2>
+        <p class="skill-reference-name">architecture-blueprint-generator</p>
+        <p>Membantu memetakan komponen aplikasi, tanggung jawabnya, hubungan antarbagian, dan aliran data berdasarkan bahan proyek yang tersedia.</p>
+        <p><strong>Di workshop:</strong> memakai cerita sistem rekaan, bukan membaca aplikasi bank asli. Kondisi sekarang dipisahkan dari usulan perbaikan.</p>
+        <div class="skill-reference-links"><a href="index.html#architecture">Coba demo arsitektur</a><a href="https://github.com/github/awesome-copilot/tree/0fe6545b950671641b2b14b44eb56678fea6c6b4/skills/architecture-blueprint-generator" target="_blank" rel="noopener noreferrer">Lihat sumber &#8599;</a></div>
+      </article>
+      <article class="panel" data-skill="create-architectural-decision-record">
+        <span class="source-tag">Awesome Copilot</span>
+        <h2>Catat alasan memilih suatu desain</h2>
+        <p class="skill-reference-name">create-architectural-decision-record</p>
+        <p>Menyusun catatan keputusan arsitektur atau ADR: masalahnya apa, pilihannya apa saja, alasan memilih, serta kelebihan dan kekurangannya.</p>
+        <p><strong>Di workshop:</strong> latihan tambahan membandingkan kirim ulang pesan manual dengan antrean outbox. Catatannya masih usulan, bukan izin implementasi.</p>
+        <div class="skill-reference-links"><a href="index.html#architecture">Lihat latihan tambahan ADR</a><a href="https://github.com/github/awesome-copilot/tree/0fe6545b950671641b2b14b44eb56678fea6c6b4/skills/create-architectural-decision-record" target="_blank" rel="noopener noreferrer">Lihat sumber &#8599;</a></div>
+      </article>
+      <article class="panel" data-skill="md-to-docx">
+        <span class="source-tag">Awesome Copilot</span>
+        <h2>Ubah dokumen jadi file Word</h2>
+        <p class="skill-reference-name">md-to-docx</p>
+        <p>Mengubah Markdown menjadi .docx dengan judul, daftar, tabel, dan gambar PNG. Ini alat konversi, bukan skill yang menulis isi atau menggambar alur dari nol.</p>
+        <p><strong>Di workshop:</strong> membantu membuat Word untuk panduan kerja, arsitektur, notulen, dan laporan gangguan.</p>
+        <div class="skill-reference-links"><a href="index.html#minutes">Lihat hasil Word</a><a href="https://github.com/github/awesome-copilot/tree/0fe6545b950671641b2b14b44eb56678fea6c6b4/skills/md-to-docx" target="_blank" rel="noopener noreferrer">Lihat sumber &#8599;</a></div>
+      </article>
+      <article class="panel" data-skill="banking-executive-deck">
+        <span class="source-tag original">Buatan workshop &middot; MIT</span>
+        <h2>Buat presentasi untuk pimpinan</h2>
+        <p class="skill-reference-name">banking-executive-deck</p>
+        <p>Mengarahkan Copilot menyiapkan isi dan menjalankan pembuat PowerPoint lokal. Hasilnya 8 slide dengan teks, tabel, diagram yang bisa diedit, sumber, dan catatan pembicara.</p>
+        <p><strong>Di workshop:</strong> cerita bank dan angka contoh jadi bahan presentasi. Skill ini bukan dari Awesome Copilot atau produk resmi Microsoft.</p>
+        <div class="skill-reference-links"><a href="index.html#powerpoint">Coba demo PowerPoint</a><a href="starter/.github/skills/banking-executive-deck/SKILL.md">Lihat isi skill</a></div>
+      </article>
+    </div>
+    <div class="callout"><strong>Satu demo bisa memakai beberapa skill.</strong> Contohnya: meeting-minutes menyusun notulen, lalu md-to-docx membuat file Word. Prompt demo sudah menyebut skill yang dibutuhkan; Anda cukup menyalin satu prompt.</div>
+    <section id="install" aria-labelledby="install-title">
+      <div class="section-heading"><div><span class="eyebrow">LANJUT KE WORKSHOP</span><h2 id="install-title">Panduan install ada di menu kiri workshop.</h2></div></div>
+      <p>Buka <a href="index.html#setup">Cara install skill</a> di halaman utama. Perintah instalasi, contoh memasang satu skill, dan cara mengeceknya di VS Code dikumpulkan di sana supaya tidak perlu pindah-pindah panduan.</p>
+    </section>
+    <div class="page-footer"><p class="hint">Semua data workshop rekaan. Skill tetap perlu bahan, alat yang siap, dan pengecekan hasil. Daftar ini bukan pengecekan instalasi di laptop.</p><a class="button primary" href="index.html#setup">Lihat persiapan demo &#8594;</a></div>
+  </main>
+  <footer class="site-footer"><span>Banking Skills Lab <span class="muted">/</span> GitHub Copilot</span><span>Ringkasan skill &middot; Bahasa Indonesia</span></footer>
+</body>
+</html>

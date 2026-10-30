@@ -1,0 +1,42 @@
+{
+  "name": "network-mcp-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo Network Operations Assistant dengan GitHub Copilot SDK, MCP, dan data simulasi.",
+  "engines": {
+    "node": ">=24.13.0 <25"
+  },
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "start": "node --env-file-if-exists=.env dist/server/index.js",
+    "build": "npm run typecheck && vite build && tsc -p tsconfig.server.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json",
+    "test": "tsx --test tests/*.test.ts",
+    "data:generate": "tsx scripts/generate-data.ts",
+    "data:ingest": "tsx scripts/ingest-data.ts",
+    "seed": "npm run data:ingest",
+    "db:inspect": "tsx scripts/inspect-db.ts",
+    "db:prove-live": "tsx scripts/prove-live-data.ts",
+    "test:mcp": "tsx scripts/smoke-mcp.ts",
+    "test:agent": "tsx scripts/smoke-agent.ts"
+  },
+  "dependencies": {
+    "@github/copilot-sdk": "1.0.28",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "express": "5.3.0",
+    "lucide-react": "1.61.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "tsx": "4.23.15",
+    "typescript": "~5.9.3",
+    "vite": "8.3.5"
+  }
+}

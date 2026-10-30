@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "authDocs": {
+      "type": "stdio",
+      "command": "${workspaceFolder}\\copilot-fundamentals-training\\demos\\copilot-techniques\\mcp-auth-docs-id\\.venv\\Scripts\\python.exe",
+      "args": [
+        "${workspaceFolder}\\copilot-fundamentals-training\\demos\\copilot-techniques\\mcp-auth-docs-id\\mcp_auth_docs_starter.py"
+      ]
+    }
+  }
+}

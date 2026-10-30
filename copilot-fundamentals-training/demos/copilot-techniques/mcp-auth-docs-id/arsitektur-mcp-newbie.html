@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Panduan pemula arsitektur server MCP authDocs: VS Code, Copilot, Python, stdio, dan pencarian dokumen lokal.">
+  <title>Memahami MCP authDocs - Panduan Pemula</title>
+  <style>
+    :root { color-scheme: light; --ink:#172b45; --muted:#4b6178; --blue:#1455a0; --line:#d6e1ec; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f3f6fa; color:var(--ink); font:17px/1.75 system-ui,"Segoe UI",sans-serif; }
+    header { background:#102d4f; color:white; padding:64px 24px 48px; }
+    .wrap { max-width:1080px; margin:auto; }
+    header p { color:#d5e5f7; max-width:760px; }
+    h1 { font-size:clamp(2rem,5vw,3.2rem); line-height:1.15; margin:14px 0 24px; }
+    h2 { font-size:1.8rem; line-height:1.3; margin-top:0; }
+    h3 { line-height:1.4; margin-top:28px; }
+    a { color:var(--blue); text-underline-offset:3px; overflow-wrap:anywhere; }
+    header a { color:#d5e5f7; }
+    nav { padding:24px; background:white; border-bottom:1px solid var(--line); }
+    nav .wrap { display:flex; flex-wrap:wrap; gap:10px 24px; }
+    main { padding:32px 20px; }
+    section { background:white; border:1px solid var(--line); border-radius:16px; padding:32px; margin-bottom:24px; scroll-margin-top:20px; }
+    .tag { display:inline-block; border:1px solid #6d8eaf; border-radius:30px; padding:4px 14px; font-size:.85rem; letter-spacing:.08em; }
+    .lead { font-size:1.2rem; }
+    .callout { padding:18px 22px; background:#eaf3ff; border-left:5px solid #3577c4; border-radius:6px; margin:22px 0; }
+    .warn { background:#fff5df; border-color:#c58713; }
+    .good { background:#edf7ef; border-color:#368551; }
+    .analogy { color:var(--muted); font-style:italic; }
+    figure { margin:28px 0; }
+    img { display:block; height:auto; max-width:100%; border:1px solid var(--line); border-radius:10px; }
+    figcaption { color:var(--muted); font-size:.9rem; margin-top:10px; }
+    table { border-collapse:collapse; width:100%; margin:20px 0; table-layout:fixed; }
+    th,td { text-align:left; vertical-align:top; border:1px solid var(--line); padding:12px; overflow-wrap:anywhere; }
+    th { background:#eef4fb; }
+    code { font: .9em/1.6 Consolas,monospace; background:#edf2f7; border-radius:4px; padding:2px 5px; overflow-wrap:anywhere; }
+    pre { background:#132c46; color:#e4f0ff; padding:20px; border-radius:10px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    pre code { background:none; color:inherit; padding:0; }
+    li { margin:9px 0; }
+    .steps { padding-left:26px; }
+    .steps li { padding-left:8px; margin-bottom:22px; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .card { padding:22px; background:#f7f9fc; border:1px solid var(--line); border-radius:10px; }
+    .card h3 { margin-top:0; }
+    footer { padding:24px; text-align:center; color:var(--muted); }
+    @media(max-width:650px) {
+      body { font-size:16px; } section { padding:22px 16px; } main { padding:18px 10px; }
+      .grid { grid-template-columns:1fr; } th,td { padding:8px; font-size:.86rem; }
+    }
+    @media print {
+      body { background:white; font-size:11pt; } header { padding:24px; }
+      nav { display:none; } main { padding:0; } section { border:0; padding:18px 0; }
+      figure,.callout,tr { break-inside:avoid; } a { color:inherit; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <span class="tag">PANDUAN PEMULA / BERDASARKAN KODE WORKSPACE</span>
+    <h1>Bagaimana Copilot<br>membaca dokumen lewat MCP?</h1>
+    <p class="lead">Mengenal server <strong>authDocs</strong>, dari pertanyaan di chat sampai menjadi jawaban yang bersumber dari dokumen MyCorp-Auth.</p>
+    <p>Satu cerita sepanjang panduan: Anda bertanya, <em>"Jelaskan alur token MyCorp-Auth dalam 4 langkah."</em> Kita ikuti perjalanan pertanyaan ini dengan analogi <strong>perpustakaan</strong>.</p>
+  </div>
+</header>
+<nav aria-label="Daftar isi"><div class="wrap">
+  <a href="#ringkasan">Gambaran besar</a><a href="#pemain">Istilah</a><a href="#arsitektur">Arsitektur</a>
+  <a href="#konfigurasi">Konfigurasi</a><a href="#alur">Alur pesan</a><a href="#pencarian">Cara mencari</a>
+  <a href="#batasan">Batasan</a><a href="#validasi">Menguji</a><a href="#masalah">Troubleshooting</a>
+</div></nav>
+<main class="wrap">
+  <section id="ringkasan">
+    <h2>1. Masalah apa yang diselesaikan?</h2>
+    <p>Model AI, yaitu perangkat lunak yang menyusun jawaban dari konteks yang diterimanya, tidak otomatis membaca seluruh folder Anda. Ketika ditanya tentang MyCorp-Auth, ia membutuhkan cara untuk memperoleh informasi yang relevan dari dokumentasi.</p>
+    <p><strong>MCP (Model Context Protocol)</strong> adalah aturan komunikasi agar aplikasi AI dapat memakai fungsi dari program lain. Di sini, aturannya memungkinkan Copilot meminta program Python mencari dokumen. Python adalah bahasa pemrograman yang menjalankan petugas pencari tersebut.</p>
+    <div class="callout"><strong>Analogi perpustakaan:</strong> Anda adalah pembaca. Copilot adalah asisten di meja layanan. Server authDocs adalah petugas arsip. Folder dokumen adalah rak buku. MCP adalah formulir dan aturan peminjaman informasi yang disepakati bersama.</div>
+    <p>Mengirim pertanyaan membuat Copilot dapat memilih pencarian. Pencarian menghasilkan kutipan. Kutipan itulah yang digunakan model untuk menyusun jawaban, bukan sekadar mengandalkan pengetahuan umum.</p>
+    <div class="callout warn"><strong>Pembedaan terpenting:</strong> <code>authDocs</code> bukan layanan login MyCorp-Auth. Server ini hanya <strong>membaca dokumentasi tentang login dan token</strong>. Ia tidak menerbitkan token, tidak memeriksa password, dan tidak menghubungi LDAP.</div>
+  </section>
+
+  <section id="pemain">
+    <h2>2. Kenali para pemainnya</h2>
+    <table>
+      <thead><tr><th scope="col">Istilah</th><th scope="col">Arti pada proyek ini</th><th scope="col">Di perpustakaan</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Host</strong></td><td>Aplikasi yang menampung pengalaman AI: VS Code dan Copilot.</td><td>Meja layanan tempat pembaca bertanya.</td></tr>
+        <tr><td><strong>Model AI</strong></td><td>Memilih tool yang relevan dan menyusun jawaban dari hasilnya. Bukan kode Python server ini.</td><td>Asisten yang memahami pertanyaan dan menjelaskan hasil arsip.</td></tr>
+        <tr><td><strong>MCP client</strong></td><td>Bagian penghubung di host yang berkomunikasi dengan server MCP.</td><td>Penghubung yang mengantar formulir ke petugas arsip.</td></tr>
+        <tr><td><strong>MCP server</strong></td><td>Program Python <code>authDocs</code> yang menyediakan fungsi pencarian.</td><td>Petugas arsip yang tahu cara membaca rak dokumen.</td></tr>
+        <tr><td><strong>Tool</strong></td><td>Fungsi yang dapat dipanggil: <code>search_auth_docs(query, limit)</code>.</td><td>Layanan "carikan kutipan dengan frasa ini".</td></tr>
+        <tr><td><strong>FastMCP / SDK</strong></td><td>Pustaka dari paket <code>mcp</code>. SDK adalah kumpulan kode bantu; FastMCP mengurus protokol dan pendaftaran tool.</td><td>Perlengkapan petugas untuk menerima formulir standar.</td></tr>
+        <tr><td><strong>Markdown</strong></td><td>Format dokumen teks berakhiran <code>.md</code>; tanda sederhana membentuk judul dan tabel.</td><td>Buku-buku di rak arsip.</td></tr>
+        <tr><td><strong>JSON</strong></td><td>Format data dengan pasangan nama dan nilai, misalnya <code>{"limit": 8}</code>.</td><td>Formulir dengan kolom bernama jelas.</td></tr>
+        <tr><td><strong>JSON-RPC</strong></td><td>Aturan pesan untuk meminta fungsi dijalankan dan mengirim hasil atau error, memakai JSON.</td><td>Formulir resmi dengan nomor permintaan dan jenis layanan.</td></tr>
+        <tr><td><strong>stdio</strong></td><td>Jalur masukan dan keluaran standar suatu proses, dipakai untuk pesan lokal.</td><td>Jalur antarformulir langsung antara meja layanan dan arsip.</td></tr>
+        <tr><td><strong>Proses anak</strong></td><td>Program terpisah yang dijalankan host; di sini executable Python.</td><td>Petugas arsip yang ditugaskan oleh meja layanan.</td></tr>
+        <tr><td><strong>.venv</strong></td><td>Lingkungan Python terpisah yang menyimpan interpreter dan paket untuk demo ini.</td><td>Perlengkapan khusus petugas arsip ini, tidak tercampur dengan petugas lain.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Istilah dalam buku, bukan komponen server:</strong> JWT adalah token autentikasi berisi klaim bertanda tangan; LDAP adalah protokol untuk mengakses direktori identitas. Dalam analogi kita, keduanya adalah topik yang tertulis di buku. Membaca buku tentang JWT atau LDAP tidak berarti petugas arsip menjalankan layanan tersebut.</p>
+  </section>
+
+  <section id="arsitektur">
+    <h2>3. Arsitektur yang benar-benar dipakai</h2>
+    <p>Diagram ini mengikuti konfigurasi workspace dan skrip <code>mcp_auth_docs_starter.py</code>. Warna mengelompokkan peran, bukan layanan cloud. Tidak ada Azure, database, atau server HTTP yang diperlukan oleh kode pencarian ini.</p>
+    <figure>
+      <img src="diagrams/arsitektur-authdocs.png" alt="Arsitektur authDocs: pengguna, VS Code dan Copilot, client MCP, kanal stdio, proses Python FastMCP, dan folder Markdown lokal." width="100%">
+      <figcaption>Dibuat dan diekspor dengan draw.io Desktop. <a href="diagrams/arsitektur-authdocs.drawio">Buka sumber diagram yang dapat diedit</a>. Untuk membaca tulisan lebih besar, <a href="diagrams/arsitektur-authdocs.png">buka PNG</a>.</figcaption>
+    </figure>
+    <div class="grid">
+      <div class="card"><h3>Bagian lokal</h3><p>VS Code menjalankan Python. Python membaca file di komputer Anda, lalu mengirim hasil lewat stdio. Server ini tidak membuka port jaringan.</p></div>
+      <div class="card"><h3>Bagian model AI</h3><p>Konfigurasi ini tidak menentukan lokasi atau penyedia model. Copilot dapat mengirim konteks tool ke model sesuai konfigurasi dan kebijakannya. "Server lokal" tidak otomatis berarti seluruh percakapan berjalan offline.</p></div>
+    </div>
+    <p class="analogy">Analogi: petugas arsip dan raknya berada di lokasi Anda. Itu tidak membuktikan bahwa asisten penulis jawaban juga bekerja sepenuhnya tanpa koneksi ke luar.</p>
+  </section>
+
+  <section id="konfigurasi">
+    <h2>4. Mengapa konfigurasi ini diperlukan?</h2>
+    <p>Host membutuhkan alamat program yang harus dijalankan. Tanpa petunjuk itu, ia tidak tahu petugas arsip mana yang menyediakan pencarian. Konfigurasi ada di <a href="../../../../.vscode/mcp.json"><code>.vscode\mcp.json</code> pada root workspace</a>.</p>
+    <pre><code>{
+  "servers": {
+    "authDocs": {
+      "type": "stdio",
+      "command": "${workspaceFolder}\\copilot-fundamentals-training\\demos\\copilot-techniques\\mcp-auth-docs-id\\.venv\\Scripts\\python.exe",
+      "args": [
+        "${workspaceFolder}\\copilot-fundamentals-training\\demos\\copilot-techniques\\mcp-auth-docs-id\\mcp_auth_docs_starter.py"
+      ]
+    }
+  }
+}</code></pre>
+    <table>
+      <thead><tr><th scope="col">Bagian</th><th scope="col">Mengapa ada / apa efeknya?</th></tr></thead>
+      <tbody>
+        <tr><td><code>servers.authDocs</code></td><td>Mendaftarkan satu server dengan nama authDocs agar host dapat mengenalinya.</td></tr>
+        <tr><td><code>type: "stdio"</code></td><td>Memilih komunikasi proses lokal, bukan alamat website.</td></tr>
+        <tr><td><code>command</code></td><td>Menentukan executable Python di <code>.venv</code>; Python tersebut harus sudah tersedia.</td></tr>
+        <tr><td><code>args</code></td><td>Memberi Python nama skrip yang harus dijalankan. Tidak ada argumen <code>test</code>, sehingga skrip masuk mode server.</td></tr>
+        <tr><td><code>${workspaceFolder}</code></td><td>Variabel yang diganti VS Code dengan folder workspace. Pada sesi ini nilainya <code>C:\clients\Organization\demo\fundamental</code>.</td></tr>
+        <tr><td><code>\\</code></td><td>Penulisan satu karakter backslash di string JSON. Ini bukan dua folder pemisah.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">Jika Anda membuka <code>copilot-fundamentals-training</code> langsung sebagai root workspace, awalan path pada konfigurasi ini perlu disesuaikan. Alamat rak harus dihitung dari pintu masuk perpustakaan yang benar.</div>
+    <h3>Tiga jalur komunikasi yang jangan tertukar</h3>
+    <table>
+      <thead><tr><th scope="col">Jalur</th><th scope="col">Isi</th><th scope="col">Analogi</th></tr></thead>
+      <tbody>
+        <tr><td><strong>stdin</strong></td><td>Permintaan MCP masuk ke Python.</td><td>Formulir masuk ke petugas arsip.</td></tr>
+        <tr><td><strong>stdout</strong></td><td>Balasan protokol keluar dari Python.</td><td>Formulir hasil resmi.</td></tr>
+        <tr><td><strong>stderr</strong></td><td>Log, yaitu catatan diagnostik untuk memeriksa masalah.</td><td>Buku catatan petugas, terpisah dari formulir hasil.</td></tr>
+      </tbody>
+    </table>
+    <p>Menambahkan <code>print("server siap")</code> ke stdout dalam mode server mencampur catatan bebas dengan protokol. Client dapat gagal membacanya. Kode memakai logging ke stderr agar jalur resmi tetap bersih.</p>
+    <p><strong>Port:</strong> tidak ada port TCP/HTTP untuk server ini. HTTP adalah protokol web; bukan transport yang dipilih konfigurasi. Jangan mencoba memvalidasi stdio dengan membuka <code>localhost:8000</code>.</p>
+  </section>
+
+  <section id="alur">
+    <h2>5. Ikuti perjalanan satu pertanyaan</h2>
+    <p>Client perlu mengenal kemampuan server sebelum memakainya. Setelah itu, model dapat memilih fungsi yang sesuai. Diagram memisahkan tahap membuka koneksi dari tahap menjawab pertanyaan.</p>
+    <figure>
+      <img src="diagrams/urutan-authdocs.png" alt="Diagram urutan: menjalankan Python, initialize, tools/list, pertanyaan pengguna, tools/call, membaca Markdown, mengembalikan kutipan, menyusun jawaban." width="100%">
+      <figcaption>Panah putus-putus menunjukkan hasil kembali. <a href="diagrams/urutan-authdocs.drawio">Sumber draw.io</a> | <a href="diagrams/urutan-authdocs.png">PNG ukuran penuh</a>. Kolom Copilot dan client disatukan agar mudah dibaca, bukan berarti perannya sama.</figcaption>
+    </figure>
+    <ol class="steps">
+      <li><strong>Host menjalankan Python.</strong> Membaca konfigurasi menghasilkan proses server yang dipakai client. <span class="analogy">Meja layanan menugaskan petugas arsip dengan perlengkapan yang benar.</span></li>
+      <li><strong>Client dan server membuka sesi.</strong> Pesan <code>initialize</code>, yaitu permintaan pembuka, dipakai untuk menyepakati versi protokol dan kemampuan. SDK mengurus detail pesan dan notifikasi pembuka. <span class="analogy">Keduanya menyepakati format formulir.</span></li>
+      <li><strong>Client menemukan tool.</strong> <code>tools/list</code> meminta daftar fungsi, deskripsi, dan bentuk argumennya. Hasilnya membantu host/model mengenali <code>search_auth_docs</code>. <span class="analogy">Meja layanan membaca daftar jasa petugas arsip.</span></li>
+      <li><strong>Anda mengirim pertanyaan tentang token.</strong> Pertanyaan ini menjadi konteks untuk model. <span class="analogy">Pembaca meminta penjelasan buku tentang token.</span></li>
+      <li><strong>Model mengusulkan pemanggilan tool.</strong> Sebagai contoh, <code>query="token", limit=8</code>. Host/client mengeksekusinya jika tool tersedia dan izin mengizinkan. <code>tools/call</code> adalah pesan untuk menjalankan fungsi. <span class="analogy">Asisten mengisi formulir pencarian, penghubung menyerahkannya.</span></li>
+      <li><strong>Python mencari paragraf.</strong> Membaca Markdown menghasilkan kandidat kutipan, lalu pencocokan memilih yang memuat frasa. <span class="analogy">Petugas membuka buku dan menandai paragraf yang cocok.</span></li>
+      <li><strong>Server mengembalikan hasil terstruktur.</strong> Fungsi mengembalikan <code>matches</code> yang berisi nama file dan kutipan. SDK membungkusnya dalam respons MCP. <span class="analogy">Petugas mengembalikan potongan bacaan beserta nama bukunya.</span></li>
+      <li><strong>Copilot menyusun jawaban.</strong> Model menggunakan kutipan sebagai konteks untuk merangkum empat langkah. Jika kutipan belum cukup, ia dapat mencari lagi. <span class="analogy">Asisten menjelaskan bacaan, bukan mengarang isi rak yang belum dibuka.</span></li>
+    </ol>
+    <div class="callout">Pemilihan tool <strong>tidak selalu otomatis pada setiap pertanyaan</strong>. Mode chat, tool yang diaktifkan, izin, dan keputusan model berpengaruh. Jawaban yang terlihat benar belum membuktikan bahwa pencarian MCP dipanggil.</div>
+  </section>
+
+  <section id="pencarian">
+    <h2>6. Apa yang dilakukan fungsi pencarian?</h2>
+    <p><a href="mcp_auth_docs_starter.py">Skrip yang dipakai konfigurasi</a> mendaftarkan fungsi melalui <code>@mcp.tool()</code>. Tanda ini adalah dekorator: instruksi Python untuk menjadikan fungsi tersedia sebagai tool. <span class="analogy">Ini seperti memasukkan layanan pencarian ke katalog jasa arsip.</span></p>
+    <ol>
+      <li><strong>Rapikan dan validasi input.</strong> Spasi di awal/akhir query dibuang. Query kosong ditolak dengan <code>ValueError</code>, yaitu kesalahan nilai masukan. Limit harus 1 sampai 20, default 5. Ini mencegah formulir tanpa kata pencarian atau permintaan kutipan di luar batas.</li>
+      <li><strong>Temukan rak dokumen.</strong> <code>DOCS_DIR</code> dihitung dari lokasi skrip, bukan folder terminal. Jika folder tidak ada, fungsi menghasilkan <code>FileNotFoundError</code>. Petugas membutuhkan rak yang nyata sebelum mencari.</li>
+      <li><strong>Susuri file.</strong> <code>rglob("*.md")</code> mencari file Markdown sampai ke subfolder; daftar diurutkan berdasarkan path. Petugas memeriksa rak dan bagian-bagiannya secara berurutan.</li>
+      <li><strong>Baca dan pisahkan paragraf.</strong> UTF-8 adalah cara mengubah byte menjadi teks. Isi file dipisahkan pada baris kosong dengan pola <code>\n\s*\n</code>. Petugas menilai paragraf, bukan seluruh buku sebagai satu hasil.</li>
+      <li><strong>Cocokkan frasa literal.</strong> <code>casefold()</code> membuat perbandingan tidak peka huruf besar/kecil. Query bukan regex, yaitu bahasa pola pencarian. Jadi <code>TOKEN</code> bisa cocok dengan <code>token</code>, tetapi query tidak dipahami sebagai pertanyaan bahasa alami.</li>
+      <li><strong>Batasi hasil.</strong> Setiap paragraf cocok menambah satu pasangan <code>file</code> dan <code>excerpt</code>. Setelah limit tercapai, fungsi berhenti. Petugas berhenti ketika jumlah kutipan yang diminta sudah terpenuhi.</li>
+    </ol>
+    <h3>Contoh bentuk input dan hasil</h3>
+    <p>Contoh berikut menggambarkan argumen tool dan nilai kembalian fungsi, <strong>bukan seluruh paket pesan JSON-RPC</strong>. Kutipan berasal dari dokumen yang tersedia; urutan aktual mengikuti file yang dipindai.</p>
+    <pre><code>// Argumen yang dapat dipilih model untuk pertanyaan kita
+{"query": "token", "limit": 8}
+
+// Contoh satu hasil; hasil aktual dapat memuat paragraf lain
+{
+  "matches": [
+    {
+      "file": "token_flow.md",
+      "excerpt": "The following describes how a client obtains and refreshes authentication tokens."
+    }
+  ]
+}</code></pre>
+    <p><code>file</code> adalah lokasi relatif terhadap folder dokumentasi. <code>excerpt</code> berarti kutipan paragraf. <code>matches</code> adalah daftar kecocokan; tidak ada kecocokan menghasilkan <code>{"matches": []}</code>, bukan kegagalan server.</p>
+    <h3>Contoh hitungan: limit bukan jumlah buku</h3>
+    <pre><code>Awal panggilan : jumlah kutipan = 0, limit = 8
+Paragraf cocok : jumlah kutipan = 1
+...
+Paragraf cocok : jumlah kutipan = 8 -> berhenti
+
+Delapan kutipan boleh berasal dari satu file yang sama.
+Panggilan berikutnya memulai pencarian baru dari awal.</code></pre>
+    <p>Jika sebuah file awal sudah menghasilkan delapan kecocokan, file berikutnya tidak diperiksa lagi. Jadi pencarian <code>token</code> dengan limit kecil bisa berhenti sebelum mencapai semua isi <code>token_flow.md</code>. Mencapai limit berarti jatah kutipan terpenuhi, bukan semua dokumen relevan sudah dibaca.</p>
+    <table>
+      <thead><tr><th scope="col">Bayangan yang keliru</th><th scope="col">Perilaku kode sebenarnya</th></tr></thead>
+      <tbody>
+        <tr><td>Limit 8 berarti delapan dokumen terbaik.</td><td>Maksimal delapan paragraf cocok, mengikuti urutan path dan paragraf.</td></tr>
+        <tr><td>Server memahami semua sinonim dan makna pertanyaan.</td><td>Server mencari frasa literal. Model yang memilih frasa dan menyusun jawaban.</td></tr>
+        <tr><td>Server sudah mengindeks dan menyimpan semua isi.</td><td>Kode membaca file saat pencarian; tidak ada indeks vektor atau cache hasil.</td></tr>
+        <tr><td>Query "token" pasti mengembalikan seluruh alur.</td><td>Hanya paragraf yang mengandung frasa tersebut. Bagian langkah lain bisa terlewat.</td></tr>
+      </tbody>
+    </table>
+    <p class="analogy">Intinya: petugas menandai frasa pada paragraf sesuai urutan rak. Ia bukan penilai otomatis buku terbaik.</p>
+  </section>
+
+  <section id="batasan">
+    <h2>7. Apa yang tidak dilakukan server ini?</h2>
+    <ul>
+      <li><strong>Tidak menjalankan login.</strong> Endpoint seperti <code>/login</code> dan <code>/refresh</code> adalah topik di dokumen, bukan route yang dibuat skrip MCP ini.</li>
+      <li><strong>Tidak sama dengan scaffold Flask lama.</strong> <a href="../mcp_auth_docs.py">Skrip di folder induk</a> berisi kerangka aplikasi web Flask dengan endpoint <code>/authdoc</code> yang belum lengkap. Flask adalah framework web Python. Konfigurasi saat ini menunjuk ke skrip FastMCP di folder modul ini, bukan scaffold tersebut.</li>
+      <li><strong>Tidak membutuhkan API key model di Python.</strong> API key adalah kredensial akses layanan. Kode ini hanya memakai paket MCP dan file lokal; akses model menjadi urusan host.</li>
+      <li><strong>Tidak menjamin isi dokumen benar.</strong> Ada perbedaan rute refresh antar dokumen dan detail yang disamarkan. Model harus menyatakan ketidakpastian, bukan menebak data yang hilang.</li>
+      <li><strong>Tidak membuat sumber informasi otomatis aman.</strong> Dokumen bisa salah atau memuat instruksi berbahaya. Perlakukan kutipan sebagai data, bukan perintah yang boleh mengambil alih perilaku asisten.</li>
+      <li><strong>Tidak mengisolasi seluruh izin proses.</strong> Fungsi ini hanya membaca folder dokumentasi, tetapi proses Python tetap berjalan dengan izin pengguna yang menjalankannya. Jangan menaruh rahasia di sumber yang akan dikirim ke model.</li>
+    </ul>
+    <div class="callout warn"><strong>Analogi:</strong> petugas arsip bisa mengambil buku yang salah atau buku dengan isi keliru. Berhasil mendapatkan buku tidak sama dengan menjamin semua pernyataannya benar.</div>
+  </section>
+
+  <section id="validasi">
+    <h2>8. Bagaimana membuktikan MCP bekerja?</h2>
+    <p>Ada dua pemeriksaan berbeda. Yang pertama menguji petugas mencari buku. Yang kedua menguji seluruh perjalanan dari meja layanan sampai jawaban.</p>
+    <h3>A. Uji fungsi pencarian, tanpa koneksi MCP</h3>
+    <p>Di VS Code, buka terminal PowerShell pada root workspace <code>C:\clients\Organization\demo\fundamental</code>, lalu jalankan:</p>
+    <pre><code>&amp; ".\copilot-fundamentals-training\demos\copilot-techniques\mcp-auth-docs-id\.venv\Scripts\python.exe" `
+  ".\copilot-fundamentals-training\demos\copilot-techniques\mcp-auth-docs-id\mcp_auth_docs_starter.py" `
+  test --query token --limit 2</code></pre>
+    <p>Argumen <code>test</code> membuat skrip mencetak JSON, lalu selesai. Tanpa <code>test</code>, skrip menjalankan transport MCP. Hasil <code>matches</code> membuktikan Python, paket, dan akses dokumen berjalan, <strong>bukan handshake client MCP</strong>.</p>
+    <div class="callout good"><strong>Hasil pemeriksaan saat panduan dibuat:</strong> perintah di atas berhasil dan menghasilkan dua kutipan dari <code>misc\support.md</code>. Ini sesuai pencarian rekursif dan limit dua paragraf. Tool MCP juga telah berhasil dipanggil pada sesi chat ini; keberhasilan itu tidak menjamin semua sesi berikutnya otomatis tersambung.</div>
+    <p class="analogy">Analogi: meminta petugas mencari langsung membuktikan rak bisa dibaca, tetapi belum membuktikan penghubung di meja layanan bekerja.</p>
+    <h3>B. Uji dari Copilot sampai server</h3>
+    <ol>
+      <li>Buka konfigurasi workspace <a href="../../../../.vscode/mcp.json"><code>.vscode\mcp.json</code></a>. Gunakan kontrol <strong>Start</strong> pada server jika tersedia, atau buka Command Palette dengan <strong>Ctrl+Shift+P</strong>, cari <strong>MCP: List Servers</strong>, lalu pilih <strong>authDocs</strong>. Nama kontrol dapat berbeda menurut versi VS Code.</li>
+      <li>Jika diminta mempercayai konfigurasi, tinjau command dan script terlebih dahulu. Menyetujui konfigurasi berarti mengizinkan host menjalankan program tersebut.</li>
+      <li>Di Copilot Chat, gunakan mode yang mendukung tool dan pastikan tool authDocs diaktifkan melalui pemilih tools. Kirim pertanyaan yang sama: <strong>"Gunakan search_auth_docs untuk menjelaskan alur token MyCorp-Auth dalam 4 langkah."</strong></li>
+      <li>Periksa pemanggilan <code>search_auth_docs</code>, yang bisa tampil sebagai <code>authDocs-search_auth_docs</code>. Lihat argumen dan hasilnya. Nama tampilan dapat diberi awalan server oleh host.</li>
+      <li>Pastikan jawaban mengambil informasi dari kutipan. Jika langkah tidak lengkap, minta pencarian lanjutan dengan frasa yang lebih spesifik; jangan menganggap semua dokumen sudah terbaca.</li>
+    </ol>
+    <p><strong>Hasil yang diharapkan:</strong> terlihat panggilan tool, argumen pencarian, hasil kutipan, kemudian jawaban. Itulah bukti alur penuh. <span class="analogy">Formulir benar-benar sampai ke arsip, hasilnya kembali, dan asisten menjelaskan buku yang diterima.</span></p>
+    <p>Anda tidak perlu menjalankan server di terminal secara terpisah sebelum memilih Start. Untuk stdio ini, host menjalankan proses yang terhubung langsung kepadanya; proses manual lain tidak otomatis menjadi server yang dipakai host.</p>
+  </section>
+
+  <section id="masalah">
+    <h2>9. Jika error, lihat di bagian mana alurnya putus</h2>
+    <p>Tabel ini adalah panduan diagnosis, bukan daftar error yang dipastikan terjadi pada komputer Anda. Pilih gejala yang benar-benar terlihat, lalu uji lapisan yang relevan.</p>
+    <table>
+      <thead><tr><th scope="col">Gejala</th><th scope="col">Kemungkinan sebab dan analogi</th><th scope="col">Tindakan dan bukti perbaikan</th></tr></thead>
+      <tbody>
+        <tr><td>Python tidak bisa dijalankan.</td><td>Path salah, root workspace berubah, atau executable .venv belum ada. Petugas diarahkan ke alamat yang tidak ada.</td><td>Bandingkan command dengan lokasi nyata. Periksa kembali <a href="#konfigurasi">bagian konfigurasi</a>, lalu jalankan <a href="#validasi">uji A</a>.</td></tr>
+        <tr><td><code>ModuleNotFoundError: mcp</code></td><td>Paket belum terpasang pada Python yang dipilih. Petugas tidak membawa perlengkapan formulir.</td><td>Gunakan Python .venv yang sama untuk memasang <a href="requirements.txt">requirements.txt</a> melalui <code>python -m pip install -r</code>, lalu ulangi uji A.</td></tr>
+        <tr><td><code>FileNotFoundError</code> untuk folder dokumen.</td><td>Folder sumber hilang atau struktur direktori berubah. Rak arsip tidak ditemukan.</td><td>Pastikan <code>mycorp-auth-docs</code> adalah folder saudara modul ini. Rumus DOCS_DIR mengambil parent dua tingkat dari lokasi file skrip. Ulangi uji A.</td></tr>
+        <tr><td>Server langsung berhenti atau protokol gagal dibaca.</td><td>Periksa log: bisa ada exception, output print bebas, atau argumen test pada konfigurasi. Formulir resmi tercampur catatan atau petugas selesai terlalu awal.</td><td>Lihat output server melalui kontrol server/Show Output yang tersedia di VS Code. stdout harus khusus MCP; konfigurasi args jangan memuat test. Ulangi uji B.</td></tr>
+        <tr><td>Server hidup tetapi jawaban tanpa tool.</td><td>Tool belum aktif, izin belum disetujui, atau model tidak memilihnya. Asisten menjawab tanpa mengirim formulir ke arsip.</td><td>Aktifkan tool, periksa izin, minta penggunaan search_auth_docs secara eksplisit, lalu periksa jejak panggilan di uji B.</td></tr>
+        <tr><td><code>matches</code> kosong.</td><td>Tidak ada frasa literal yang cocok. Petugas tidak menemukan kata itu, bukan berarti rak rusak.</td><td>Coba frasa dari sumber, misalnya <code>token</code>. Periksa <a href="#pencarian">aturan pencarian</a>.</td></tr>
+        <tr><td>Kutipan ada, tetapi alur tidak lengkap.</td><td>Limit terpenuhi lebih awal atau paragraf lain tidak mengandung query. Jatah kutipan habis sebelum buku berikutnya.</td><td>Gunakan query lebih spesifik atau pencarian lanjutan; limit maksimal 20. Verifikasi setiap langkah terhadap dokumen.</td></tr>
+        <tr><td>Browser localhost:8000 tidak terhubung.</td><td>Ini stdio, bukan server web. Pembaca mendatangi loket yang tidak disediakan.</td><td>Gunakan uji MCP, bukan browser HTTP. Lihat <a href="#konfigurasi">jalur stdio</a>.</td></tr>
+      </tbody>
+    </table>
+    <p class="analogy">Diagnosis yang baik: periksa apakah petugas bisa membaca rak, lalu apakah formulir bisa diantar, baru apakah jawaban memakai kutipan yang benar.</p>
+  </section>
+
+  <section id="penutup">
+    <h2>10. Ingat enam kalimat ini</h2>
+    <ol>
+      <li>VS Code dan Copilot adalah tempat Anda bertanya.</li>
+      <li>Model memilih pencarian, client mengirim permintaan yang diizinkan.</li>
+      <li>Server Python menyediakan fungsi pencarian, bukan kecerdasan model.</li>
+      <li>Stdio membawa pesan lokal tanpa port HTTP.</li>
+      <li>Dokumen menghasilkan kutipan; model memakai kutipan untuk menjawab.</li>
+      <li>Untuk membuktikan MCP bekerja, lihat panggilan tool dan hasilnya, bukan hanya jawaban akhir.</li>
+    </ol>
+    <div class="callout good"><strong>Versi perpustakaannya:</strong> pembaca bertanya, asisten memilih layanan, penghubung mengantar formulir, petugas membuka rak, kutipan kembali, asisten menjelaskan.</div>
+    <h3>Sumber dan file yang bisa dibuka</h3>
+    <ul>
+      <li><a href="../../../../.vscode/mcp.json">Konfigurasi server pada root workspace</a>.</li>
+      <li><a href="mcp_auth_docs_starter.py">Implementasi yang ditunjuk konfigurasi</a> dan <a href="requirements.txt">dependensi MCP</a>.</li>
+      <li><a href="README.md">Panduan praktik modul</a>.</li>
+      <li><a href="../mycorp-auth-docs/token_flow.md">Dokumen alur token</a>, <a href="../mycorp-auth-docs/overview.md">overview</a>, dan <a href="../mycorp-auth-docs/troubleshooting.md">troubleshooting</a>.</li>
+      <li><a href="diagrams/arsitektur-authdocs.drawio">Sumber arsitektur draw.io</a> dan <a href="diagrams/urutan-authdocs.drawio">sumber diagram urutan draw.io</a>.</li>
+    </ul>
+    <p>Untuk mengedit diagram, buka draw.io Desktop, pilih <strong>File &gt; Open From &gt; Device</strong> atau menu Open yang tersedia, lalu pilih file .drawio. Diagram memakai bentuk generik karena sistem ini bukan arsitektur Azure.</p>
+    <p>Halaman dan PNG disimpan lokal, tanpa font, pustaka, atau renderer dari CDN. Untuk berbagi, sertakan HTML beserta folder <code>diagrams</code>. Tautan ke kode sumber memerlukan struktur workspace aslinya. Gunakan menu cetak browser untuk menyimpan panduan menjadi PDF bila diperlukan.</p>
+  </section>
+</main>
+<footer>authDocs / Panduan pemula berbahasa Indonesia / Disusun dari konfigurasi dan kode yang diperiksa pada 28 Oktober 2026.</footer>
+</body>
+</html>

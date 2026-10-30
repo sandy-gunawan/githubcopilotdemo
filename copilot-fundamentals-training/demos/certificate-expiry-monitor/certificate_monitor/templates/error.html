@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Filter dashboard tidak valid.">
+    <title>Filter tidak valid · Certificate Expiry Monitor</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body class="app-shell app-shell--error">
+    <a class="skip-link" href="#error-content">Lewati ke konten utama</a>
+    <main id="error-content" class="container error-page">
+      <div class="error-card">
+        <span class="error-code">HTTP 400 · INPUT FILTER</span>
+        <h1>Filter tidak valid</h1>
+        <p class="error-message" role="alert">{{ message }}</p>
+        <p class="error-help">
+          Gunakan salah satu pilihan status yang tersedia pada dashboard.
+        </p>
+        <a class="btn btn-primary" href="{{ url_for('dashboard') }}">
+          Kembali ke dashboard
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

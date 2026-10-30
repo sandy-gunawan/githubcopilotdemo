@@ -1,0 +1,15 @@
+{
+  "name": "copilot-uiux-comparison",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Same-prompt UI/UX skill comparison; the HTML guide works without npm",
+  "scripts": {
+    "prepare": "python scripts/prepare_workspaces.py",
+    "bundle": "python scripts/build_kit.py",
+    "test": "python tests/validate_kit.py",
+    "test:browser": "node --test --test-reporter=tap tests/browser.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}

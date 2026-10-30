@@ -1,0 +1,82 @@
+[
+  {
+    "id": "gateway",
+    "name": "Gateway Demo",
+    "hostname": "gateway.example.test",
+    "port": 443,
+    "environment": "Production",
+    "issuer": "Demo Internal CA",
+    "expires_in_seconds": 5184000,
+    "error_reason": null
+  },
+  {
+    "id": "monitoring",
+    "name": "Monitoring Demo",
+    "hostname": "monitoring.example.test",
+    "port": 443,
+    "environment": "Production",
+    "issuer": "Demo Internal CA",
+    "expires_in_seconds": 2678400,
+    "error_reason": null
+  },
+  {
+    "id": "portal",
+    "name": "Portal Demo",
+    "hostname": "portal.example.test",
+    "port": 443,
+    "environment": "Staging",
+    "issuer": "Demo Internal CA",
+    "expires_in_seconds": 2592000,
+    "error_reason": null
+  },
+  {
+    "id": "registry",
+    "name": "Registry Demo",
+    "hostname": "registry.example.test",
+    "port": 443,
+    "environment": "Production",
+    "issuer": "Demo Internal CA",
+    "expires_in_seconds": 1209600,
+    "error_reason": null
+  },
+  {
+    "id": "backup",
+    "name": "Backup Demo",
+    "hostname": "backup.example.test",
+    "port": 8443,
+    "environment": "Production",
+    "issuer": "Demo Internal CA",
+    "expires_in_seconds": 604800,
+    "error_reason": null
+  },
+  {
+    "id": "vpn",
+    "name": "VPN Demo",
+    "hostname": "vpn.example.test",
+    "port": 443,
+    "environment": "Staging",
+    "issuer": "Demo Internal CA",
+    "expires_in_seconds": 86400,
+    "error_reason": null
+  },
+  {
+    "id": "legacy",
+    "name": "Legacy Demo",
+    "hostname": "legacy.example.test",
+    "port": 443,
+    "environment": "Production",
+    "issuer": "Demo Internal CA",
+    "expires_in_seconds": -86400,
+    "error_reason": null
+  },
+  {
+    "id": "unknown",
+    "name": "Unknown Demo",
+    "hostname": "unknown.example.test",
+    "port": 443,
+    "environment": "Staging",
+    "issuer": null,
+    "expires_in_seconds": null,
+    "error_reason": "Metadata sertifikat tidak tersedia dalam simulasi offline."
+  }
+]

@@ -1,0 +1,11 @@
+node_modules/
+data/
+.env
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfplan
+crash.log
+*.tfvars
+*.tfvars.json
+*.tfplan.*

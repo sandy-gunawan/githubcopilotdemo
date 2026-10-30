@@ -1,0 +1,27 @@
+{
+  "incident-timeline": {
+    "title": "Kronologi gangguan portal keluhan - kejadian rekaan",
+    "description": "SINTETIS. Gejala mulai 09:00 WIB, alert 09:05, koordinasi 09:10, mitigasi 09:20, metrik normal 09:35, dan pulih dikonfirmasi 09:45. Total dampak 45 menit; dari alert sampai pulih 40 menit.",
+    "source": "input/incident-chronology.md",
+    "width": 1200,
+    "height": 470,
+    "nodes": [
+      { "id": "symptom", "x": 20, "y": 80, "w": 160, "h": 110, "lines": ["09:00 WIB", "Gejala pertama"], "tone": "navy" },
+      { "id": "alert", "x": 220, "y": 80, "w": 160, "h": 110, "lines": ["09:05 WIB", "Alert berbunyi"], "tone": "amber" },
+      { "id": "declare", "x": 420, "y": 80, "w": 160, "h": 110, "lines": ["09:10 WIB", "Insiden", "diumumkan"], "tone": "mint" },
+      { "id": "mitigate", "x": 620, "y": 80, "w": 160, "h": 110, "lines": ["09:20 WIB", "Polling", "dipulihkan"], "tone": "teal" },
+      { "id": "normal", "x": 820, "y": 80, "w": 160, "h": 110, "lines": ["09:35 WIB", "Error rate", "normal"], "tone": "mint" },
+      { "id": "resolved", "x": 1020, "y": 80, "w": 160, "h": 110, "lines": ["09:45 WIB", "Stabil, pulih"], "tone": "navy" },
+      { "id": "impact", "x": 120, "y": 300, "w": 280, "h": 110, "lines": ["45 menit", "Total dampak", "09:00 - 09:45 WIB"], "tone": "neutral" },
+      { "id": "response", "x": 460, "y": 300, "w": 280, "h": 110, "lines": ["40 menit", "Dari alert sampai pulih", "09:05 - 09:45 WIB"], "tone": "neutral" },
+      { "id": "requests", "x": 800, "y": 300, "w": 280, "h": 110, "lines": ["5% timeout", "120 dari 2.400 request", "18 pengguna sintetis"], "tone": "neutral" }
+    ],
+    "edges": [
+      { "from": "symptom", "to": "alert", "points": [[180,135],[220,135]] },
+      { "from": "alert", "to": "declare", "points": [[380,135],[420,135]] },
+      { "from": "declare", "to": "mitigate", "points": [[580,135],[620,135]] },
+      { "from": "mitigate", "to": "normal", "points": [[780,135],[820,135]] },
+      { "from": "normal", "to": "resolved", "points": [[980,135],[1020,135]] }
+    ]
+  }
+}

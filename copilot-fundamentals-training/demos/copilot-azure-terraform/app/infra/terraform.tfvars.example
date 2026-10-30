@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars only after Azure context has been approved.
+# Replace every placeholder. Never put secrets in this file.
+subscription_id = "<approved-subscription-uuid>"
+tenant_id       = "<approved-tenant-uuid>"
+name_prefix     = "<unique-6-to-16-lowercase-alphanumeric-prefix>"
+location        = "<approved-region>"
+environment     = "dev"
+entra_client_id = "<single-tenant-web-app-client-uuid>"
+allowed_tester_object_ids = [
+  "<tester-user-object-uuid>"
+]
+
+# Keep false until both prerequisites have actually been completed.
+authentication_confirmed         = false
+application_integration_verified = false
+
+# Supply the secret securely through TF_VAR_entra_client_secret later.
+# It remains present in state even though Terraform marks it sensitive.

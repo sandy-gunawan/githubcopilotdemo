@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Portal Keluhan Mini - Bank Nusa Demo</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Langsung ke daftar keluhan</a>
+  <aside class="sidebar">
+    <a class="brand" href="/"><span class="brand-icon" aria-hidden="true">N</span><span>Bank Nusa<small>Portal Keluhan Mini</small></span></a>
+    <span class="nav-label">Ruang kerja Operations</span>
+    <a class="nav-link" href="#main" aria-current="page"><span aria-hidden="true">&#9636;</span> Antrean keluhan</a>
+    <div class="side-note"><strong>Ini aplikasi lokal, bukan bank.</strong><p>Data JSON dan lampiran tersimpan di laptop. Tidak ada login, transaksi, atau koneksi Azure.</p><span id="health" class="health">Memeriksa server...</span></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span>Operations <span class="divider">/</span> Keluhan</span><span class="pill">SINTETIS / BUKAN PRODUKSI</span></header>
+    <main id="main" tabindex="-1">
+      <div class="safety"><strong>Hanya untuk latihan lokal.</strong> Jangan isi data nasabah nyata. App tanpa autentikasi ini tidak boleh dipublikasikan.</div>
+      <div class="heading"><div><span class="eyebrow">Antrean kerja</span><h1>Keluhan masuk.<br>Mari ditindaklanjuti.</h1><p>Lihat kasus, tambahkan catatan dummy, dan coba alur sampai selesai.</p></div><button id="new-case" class="button primary">+ Buat keluhan dummy</button></div>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <div class="metrics" aria-label="Ringkasan seluruh keluhan">
+        <article><span>Total keluhan</span><strong id="metric-total">-</strong><small>Semua data lokal</small></article>
+        <article><span>Baru</span><strong id="metric-new">-</strong><small>Belum mulai diproses</small></article>
+        <article><span>Diproses</span><strong id="metric-active">-</strong><small>Sedang ditindaklanjuti</small></article>
+        <article><span>Selesai</span><strong id="metric-done">-</strong><small>Status latihan sudah ditutup</small></article>
+      </div>
+      <section class="queue" aria-labelledby="queue-title">
+        <div class="queue-head"><div><h2 id="queue-title">Daftar keluhan</h2><p id="result-count" aria-live="polite">Memuat data dari server...</p></div><button id="refresh" class="button secondary">Muat ulang</button></div>
+        <div class="filters">
+          <label class="search">Cari ID, judul, atau label dummy<input id="search" type="search" placeholder="Contoh: DEMO-C001 atau transfer"></label>
+          <label>Status<select id="status-filter"><option value="">Semua status</option><option>Baru</option><option>Diproses</option><option>Selesai</option></select></label>
+          <label>Kanal<select id="channel-filter"><option value="">Semua kanal</option><option>Mobile</option><option>Cabang</option><option>Contact Center</option></select></label>
+          <button id="reset-filter" class="quiet">Reset filter</button>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th scope="col">Kasus / judul</th><th scope="col">Label nasabah dummy</th><th scope="col">Kanal</th><th scope="col">Prioritas</th><th scope="col">Status</th><th scope="col">Lampiran</th></tr></thead><tbody id="cases"></tbody></table></div>
+        <div id="empty" class="empty" hidden><strong>Tidak ada keluhan yang cocok.</strong><p>Coba kata lain atau hapus filternya.</p><button id="empty-reset" class="button secondary">Hapus filter</button></div>
+      </section>
+      <footer class="main-footer">Demo aplikasi untuk rekomendasi Azure dan pembuatan Terraform. Membuka halaman ini tidak melakukan deployment.</footer>
+    </main>
+  </div>
+
+  <dialog id="create-dialog" aria-labelledby="create-title">
+    <div class="dialog-head"><div><span class="eyebrow">Data rekaan saja</span><h2 id="create-title">Buat keluhan dummy</h2></div><button class="close" data-close aria-label="Tutup form">&#10005;</button></div>
+    <p class="dialog-intro">Tidak ada rekening atau data pribadi yang perlu diisi. Semua tersimpan lokal.</p>
+    <div id="create-error" class="form-error" role="alert" hidden></div>
+    <form id="create-form">
+      <div class="form-grid">
+        <label>Label nasabah dummy<input name="customerLabel" minlength="2" maxlength="60" required placeholder="Nasabah Contoh 09"><small data-error="customerLabel"></small></label>
+        <label>Kanal<select name="channel" required><option>Mobile</option><option>Cabang</option><option>Contact Center</option></select><small data-error="channel"></small></label>
+        <label class="full">Judul keluhan<input name="title" minlength="5" maxlength="120" required placeholder="Contoh: cek status transfer dummy"><small data-error="title"></small></label>
+        <label>Kategori<select name="category" required><option>Transfer</option><option>Kartu</option><option>Aplikasi</option><option>Informasi</option></select><small data-error="category"></small></label>
+        <label>Prioritas<select name="priority" required><option>Rendah</option><option selected>Sedang</option><option>Tinggi</option></select><small data-error="priority"></small></label>
+        <label class="full">Deskripsi dummy<textarea name="description" minlength="10" maxlength="1500" rows="4" required placeholder="Ceritakan masalah contoh, tanpa informasi pribadi."></textarea><small data-error="description"></small></label>
+      </div>
+      <div class="dialog-actions"><button type="button" class="button secondary" data-close>Batal</button><button type="submit" class="button primary">Simpan keluhan</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <div class="dialog-head"><div><span id="detail-id" class="eyebrow"></span><h2 id="detail-title">Detail keluhan</h2></div><button class="close" data-close aria-label="Tutup detail">&#10005;</button></div>
+    <div id="detail-error" class="form-error" role="alert" hidden></div>
+    <dl id="detail-meta" class="detail-meta"></dl>
+    <div class="description"><h3>Deskripsi</h3><p id="detail-description"></p></div>
+    <form id="status-form" class="status-form"><label>Status kasus<select id="detail-status" name="status"><option>Baru</option><option>Diproses</option><option>Selesai</option></select></label><button class="button primary" type="submit">Simpan status</button></form>
+    <section class="attachment-section" aria-labelledby="attachment-title"><h3 id="attachment-title">Lampiran dummy</h3><p>PDF, PNG, JPG, atau TXT. Maksimal 2 MB per file. File tidak dipindai antivirus; jangan unggah materi nyata.</p><ul id="attachment-list"></ul><form id="upload-form"><label>Pilih file dummy<input id="attachment-file" type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.txt" required></label><button class="button secondary" type="submit">Unggah lampiran</button></form></section>
+  </dialog>
+</body>
+</html>

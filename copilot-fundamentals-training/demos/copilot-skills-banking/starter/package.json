@@ -1,0 +1,15 @@
+{
+  "name": "banking-skills-lab-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Synthetic local-only banking workshop tools",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "check:demo": "node scripts/check-demo.cjs",
+    "deck": "node .github/skills/banking-executive-deck/scripts/build-deck.cjs",
+    "render:diagram": "node scripts/render-diagram.cjs"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2"
+  }
+}

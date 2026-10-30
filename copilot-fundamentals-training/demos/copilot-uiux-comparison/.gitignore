@@ -1,0 +1,5 @@
+node_modules/
+__pycache__/
+.tsupgrader/
+workspaces/**/output/
+workspaces/**/.github/skills/

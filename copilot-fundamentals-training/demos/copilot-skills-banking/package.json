@@ -1,0 +1,15 @@
+{
+  "name": "copilot-banking-workshop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline-first HTML workshop; no runtime installation required",
+  "scripts": {
+    "examples": "node scripts/build-examples.cjs",
+    "bundle": "python scripts/build_workshop.py",
+    "test": "node --test --test-reporter=tap tests/workshop.test.cjs",
+    "test:browser": "node --test --test-reporter=tap tests/browser.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}

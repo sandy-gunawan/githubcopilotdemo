@@ -1,0 +1,13 @@
+node_modules/
+.venv/
+__pycache__/
+output/
+docs/adr/
+docs/postmortems/
+.github/skills/meeting-minutes/
+.github/skills/incident-postmortem/
+.github/skills/documentation-writer/
+.github/skills/draw-io-diagram-generator/
+.github/skills/architecture-blueprint-generator/
+.github/skills/create-architectural-decision-record/
+.github/skills/md-to-docx/

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#efedff">
+  <title>Pause Club — Break timer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #292743;
+      --muted: #716e89;
+      --purple: #7660d7;
+      --purple-dark: #5c43bb;
+      --track: #ede9fa;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      padding: 38px 28px 24px;
+      color: var(--ink);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(ellipse at 9% 12%, #f9e5d9 0, transparent 43%),
+        radial-gradient(ellipse at 95% 85%, #dcf0e6 0, transparent 40%), #efedfa;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button, input { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid #5c43bb;
+      outline-offset: 5px;
+    }
+    button:disabled { cursor: not-allowed; opacity: .48; }
+    .shell { max-width: 1080px; margin: auto; }
+    .topbar, .brand, .live-badge, .card-top, .controls, .sound-control {
+      display: flex;
+      align-items: center;
+    }
+    .topbar { justify-content: space-between; gap: 20px; }
+    .brand { gap: 10px; font-size: 19px; font-weight: 800; letter-spacing: -.7px; }
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 35px;
+      height: 35px;
+      background: var(--ink);
+      border-radius: 12px;
+      color: white;
+      font-size: 17px;
+    }
+    .top-note { font-size: 13px; color: var(--muted); }
+    header { padding: 48px 0 30px; text-align: center; }
+    .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 2.8px; text-transform: uppercase; }
+    .eyebrow::before { content: ""; display: inline-block; width: 20px; height: 2px; background: var(--purple); vertical-align: middle; margin-right: 10px; }
+    h1 { font-size: clamp(36px, 5vw, 56px); letter-spacing: -2.5px; line-height: 1.12; margin: 15px 0; font-weight: 800; }
+    h1 span { color: var(--purple); }
+    header p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0; }
+    .card {
+      background: #ffffffed;
+      border: 1px solid white;
+      border-radius: 30px;
+      box-shadow: 0 20px 70px #65578b12;
+      overflow: hidden;
+    }
+    .card-top { justify-content: space-between; padding: 21px 30px; border-bottom: 1px solid #efedf4; }
+    .card-title { font-size: 13px; font-weight: 700; }
+    .live-badge { gap: 7px; color: #647d69; font-size: 11px; background: #edf5ed; border-radius: 30px; padding: 7px 11px; }
+    .live-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #79a284; }
+    .timer-layout { display: grid; grid-template-columns: 39% 61%; }
+    .settings { padding: 37px 32px; border-right: 1px solid #efedf4; }
+    h2 { font-size: 22px; letter-spacing: -.7px; margin: 0 0 9px; }
+    .helper { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0 0 27px; }
+    .input-label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+    .duration-field { display: flex; align-items: center; padding: 0 18px; border: 1.5px solid #dfdaee; background: #faf9ff; border-radius: 14px; }
+    .duration-field:focus-within { border-color: var(--purple); }
+    .duration-field input { border: 0; background: transparent; width: 100%; min-width: 0; padding: 14px 0; font-size: 30px; font-weight: 700; color: var(--ink); }
+    .duration-field input:focus-visible { outline-offset: 0; }
+    .duration-field span { color: var(--muted); font-size: 13px; }
+    .limit { font-size: 11px; color: var(--muted); margin: 8px 0 18px; }
+    .error { color: #a13443; font-size: 12px; margin: 8px 0; line-height: 1.5; }
+    .presets { display: flex; gap: 8px; }
+    .preset {
+      flex: 1;
+      border: 1px solid #e5e0ef;
+      background: white;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 11px 6px;
+      border-radius: 10px;
+      transition: transform .18s, background .18s;
+    }
+    .preset[aria-pressed="true"] { background: #eee9ff; border-color: #cabcf3; color: var(--purple-dark); font-weight: 700; }
+    .preset:not(:disabled):hover { transform: translateY(-3px); background: #f3efff; }
+    .sound-control { gap: 9px; font-size: 12px; color: var(--muted); margin-top: 24px; cursor: pointer; }
+    .sound-control input { accent-color: var(--purple); width: 16px; height: 16px; }
+    .tip { margin-top: 29px; padding: 18px; border: 1px solid #efe8da; border-radius: 14px; background: #fcf8ee; }
+    .tip strong { font-size: 12px; }
+    .tip p { font-size: 12px; color: #82745e; line-height: 1.7; margin: 6px 0 0; }
+    .timer-panel { position: relative; display: flex; flex-direction: column; align-items: center; padding: 25px 24px 29px; overflow: hidden; }
+    .timer-stage { width: min(100%, 300px); aspect-ratio: 1; position: relative; }
+    .progress { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+    .progress circle { fill: none; stroke-width: 6; }
+    .track { stroke: var(--track); }
+    .remaining { stroke: var(--purple); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 0; transition: stroke-dashoffset .2s linear, stroke .5s; }
+    .timer-face { position: absolute; inset: 19px; border-radius: 50%; background: #f9f7fe; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .timer-label { color: var(--muted); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
+    .time { font-size: clamp(42px, 6vw, 66px); font-weight: 750; line-height: 1.2; letter-spacing: -3px; font-variant-numeric: tabular-nums; }
+    .coffee { width: 75px; height: 70px; margin-top: 3px; overflow: visible; }
+    .steam { fill: none; stroke: #b6a8d7; stroke-width: 2.5; stroke-linecap: round; animation: steam 3s ease-in-out infinite; }
+    .steam.second { animation-delay: -1.5s; }
+    .cup-body { transform-origin: 50% 80%; animation: sway 4s ease-in-out infinite; }
+    .sparkle { position: absolute; color: #d7b16d; font-size: 26px; animation: twinkle 3s ease-in-out infinite; }
+    .sparkle.one { top: 28px; right: 3px; }
+    .sparkle.two { left: 3px; bottom: 42px; color: #aa96da; font-size: 19px; animation-delay: -1s; }
+    .status { min-height: 22px; margin: 9px 0 17px; color: var(--muted); font-size: 13px; text-align: center; }
+    .controls { gap: 10px; width: min(100%, 300px); }
+    .primary { flex: 1; border: 0; border-radius: 12px; padding: 15px 18px; color: white; font-size: 13px; font-weight: 700; background: var(--purple); box-shadow: 0 6px 14px #7660d72b; transition: background .2s, transform .2s; }
+    .primary:not(:disabled):hover { background: var(--purple-dark); transform: translateY(-2px); }
+    .reset { border: 1px solid #e5e0ef; border-radius: 12px; background: white; color: var(--muted); padding: 14px 17px; font-size: 13px; transition: background .2s; }
+    .reset:hover { background: #f3efff; }
+    .bottom-note { font-size: 10px; color: var(--muted); margin: 15px 0 0; }
+    .ideas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+    .idea { display: flex; align-items: center; gap: 12px; padding: 17px 19px; border: 1px solid #ffffffb3; border-radius: 16px; background: #ffffff70; }
+    .idea-icon { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 12px; flex-shrink: 0; }
+    .idea-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .peach { background: #fbe2d7; color: #ad7155; }
+    .green { background: #dcece0; color: #6a9272; }
+    .lilac { background: #e7dff7; color: #8970b3; }
+    .idea strong { display: block; font-size: 12px; margin-bottom: 4px; }
+    .idea span { color: var(--muted); font-size: 11px; }
+    footer { padding-top: 26px; text-align: center; font-size: 11px; color: var(--muted); }
+    .confetti { position: absolute; top: -20px; width: 9px; height: 15px; border-radius: 2px; animation: fall 2.6s ease-in forwards; pointer-events: none; }
+    [data-state="running"] .live-badge::before { animation: pulse 2s infinite; }
+    [data-state="paused"] .steam, [data-state="paused"] .cup-body { animation-play-state: paused; }
+    [data-state="complete"] .remaining { stroke: #79a284; }
+    [data-state="complete"] .timer-face { background: #f0f8f1; }
+    @keyframes steam { 0%, 100% { opacity: .35; transform: translateY(3px); } 50% { opacity: 1; transform: translateY(-4px); } }
+    @keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+    @keyframes twinkle { 0%, 100% { opacity: .4; transform: scale(.8) rotate(0); } 50% { opacity: 1; transform: scale(1.1) rotate(15deg); } }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 4px #79a28420; } }
+    @keyframes fall { to { transform: translateY(520px) rotate(540deg); opacity: 0; } }
+    @media (max-width: 650px) {
+      body { padding: 23px 16px; }
+      .top-note { font-size: 10px; }
+      header { padding: 34px 0 25px; }
+      h1 { letter-spacing: -1.5px; }
+      .card-top { padding: 18px 20px; }
+      .timer-layout { grid-template-columns: 1fr; }
+      .settings { padding: 25px 23px; border-right: 0; border-bottom: 1px solid #efedf4; }
+      .helper { margin-bottom: 20px; }
+      .tip { margin-top: 20px; }
+      .timer-panel { padding-top: 22px; }
+      .time { font-size: 61px; }
+      .ideas { gap: 8px; }
+      .idea { padding: 13px 8px; flex-direction: column; gap: 9px; text-align: center; }
+      .idea strong { font-size: 11px; }
+      .idea span { font-size: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .confetti { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav class="topbar" aria-label="Brand">
+      <div class="brand"><span class="brand-icon" aria-hidden="true">||</span> pause club</div>
+      <span class="top-note">Less rush. More recharge.</span>
+    </nav>
+    <header>
+      <div class="eyebrow">Your little reset ritual</div>
+      <h1>Good things take <span>a break.</span></h1>
+      <p>Step away, stretch a little, and come back feeling like you.</p>
+    </header>
+    <main>
+      <section class="card" id="timer-card" data-state="ready" aria-label="Break countdown">
+        <div class="card-top">
+          <span class="card-title">A moment just for you</span>
+          <span class="live-badge" id="badge">Ready to unwind</span>
+        </div>
+        <div class="timer-layout">
+          <form class="settings" id="timer-form" novalidate>
+            <h2>Make room for a pause.</h2>
+            <p class="helper">Pick your perfect break. We'll keep an eye on the time.</p>
+            <label class="input-label" for="minutes">How many minutes?</label>
+            <div class="duration-field">
+              <input id="minutes" name="minutes" type="number" min="1" max="180" step="1" value="5" required aria-describedby="duration-limit duration-error">
+              <span>minutes</span>
+            </div>
+            <p class="limit" id="duration-limit">Choose a whole number from 1 to 180.</p>
+            <p class="error" id="duration-error" role="alert" hidden></p>
+            <div class="presets" role="group" aria-label="Quick break durations">
+              <button class="preset" type="button" data-minutes="5" aria-pressed="true">5 min</button>
+              <button class="preset" type="button" data-minutes="10" aria-pressed="false">10 min</button>
+              <button class="preset" type="button" data-minutes="15" aria-pressed="false">15 min</button>
+            </div>
+            <label class="sound-control"><input type="checkbox" id="sound" checked> Gentle chime when your break ends</label>
+            <p id="audio-notice" class="error" role="status" hidden></p>
+            <aside class="tip">
+              <strong>A tiny reminder</strong>
+              <p>You don't have to earn your rest. Relax your shoulders, unclench your jaw, take a breath.</p>
+            </aside>
+          </form>
+          <div class="timer-panel" id="timer-panel">
+            <div class="timer-stage">
+              <svg class="progress" viewBox="0 0 300 300" aria-hidden="true">
+                <circle class="track" cx="150" cy="150" r="141"></circle>
+                <circle class="remaining" id="progress-ring" cx="150" cy="150" r="141" pathLength="100"></circle>
+              </svg>
+              <span class="sparkle one" aria-hidden="true">&#10022;</span>
+              <span class="sparkle two" aria-hidden="true">&#10022;</span>
+              <div class="timer-face">
+                <span class="timer-label" id="timer-label">Time to recharge</span>
+                <div class="time" id="time" role="timer" aria-label="Time remaining" aria-live="off">05:00</div>
+                <svg class="coffee" viewBox="0 0 90 80" aria-hidden="true">
+                  <path class="steam" d="M33 24 C24 17 40 14 33 5"></path>
+                  <path class="steam second" d="M48 23 C39 16 55 12 48 3"></path>
+                  <g class="cup-body">
+                    <path d="M61 35 H69 C84 35 82 56 65 55" fill="none" stroke="#ad92d0" stroke-width="5"></path>
+                    <path d="M18 31 H66 V52 Q66 70 42 70 Q18 70 18 52 Z" fill="#d9c7ef"></path>
+                    <ellipse cx="42" cy="32" rx="24" ry="5" fill="#bea2d9"></ellipse>
+                    <ellipse cx="42" cy="32" rx="19" ry="3" fill="#906c59"></ellipse>
+                    <path d="M30 48 V51 M52 48 V51" stroke="#645077" stroke-width="3" stroke-linecap="round"></path>
+                    <path d="M37 54 Q41 59 46 54" fill="none" stroke="#645077" stroke-width="2" stroke-linecap="round"></path>
+                    <ellipse cx="42" cy="73" rx="31" ry="3" fill="#e6dcef"></ellipse>
+                  </g>
+                </svg>
+              </div>
+            </div>
+            <p class="status" id="status" role="status">Your next little moment of calm.</p>
+            <div class="controls">
+              <button class="primary" id="toggle" type="submit" form="timer-form">Start my break</button>
+              <button class="reset" id="reset" type="button">Reset</button>
+            </div>
+            <p class="bottom-note">No pressure. Just a little breathing room.</p>
+          </div>
+        </div>
+      </section>
+      <section class="ideas" aria-label="Little ways to recharge">
+        <div class="idea">
+          <div class="idea-icon peach" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 C10 7 5 11 5 15 a7 7 0 0 0 14 0 C19 11 14 7 12 3 Z"></path><path d="M9 15 a3 3 0 0 0 3 3"></path></svg></div>
+          <div><strong>Take a sip</strong><span>A little water goes a long way.</span></div>
+        </div>
+        <div class="idea">
+          <div class="idea-icon green" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19 C4 8 10 4 20 4 C20 15 15 20 5 19 Z M5 19 L15 9"></path></svg></div>
+          <div><strong>Find some fresh air</strong><span>A new view, a fresh perspective.</span></div>
+        </div>
+        <div class="idea">
+          <div class="idea-icon lilac" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"></circle><path d="M4 8 L12 11 L20 8 M12 11 V16 M7 22 L12 16 L17 22"></path></svg></div>
+          <div><strong>Stretch it out</strong><span>Your shoulders will thank you.</span></div>
+        </div>
+      </section>
+    </main>
+    <footer>Made for slow moments. Enjoy yours.</footer>
+  </div>
+  <script>
+    "use strict";
+
+    const minutesInput = document.getElementById("minutes");
+    const form = document.getElementById("timer-form");
+    const card = document.getElementById("timer-card");
+    const display = document.getElementById("time");
+    const ring = document.getElementById("progress-ring");
+    const toggle = document.getElementById("toggle");
+    const status = document.getElementById("status");
+    const badge = document.getElementById("badge");
+    const timerLabel = document.getElementById("timer-label");
+    const durationError = document.getElementById("duration-error");
+    const sound = document.getElementById("sound");
+    const audioNotice = document.getElementById("audio-notice");
+    const presets = [...document.querySelectorAll(".preset")];
+    let state = "ready";
+    let duration = 5 * 60 * 1000;
+    let remaining = duration;
+    let deadline = 0;
+    let interval = null;
+    let audioContext = null;
+
+    function renderTime() {
+      const seconds = Math.ceil(remaining / 1000);
+      const text = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+      display.textContent = text;
+      ring.style.strokeDashoffset = String(100 * (1 - remaining / duration));
+      document.title = state === "complete" ? "Break complete! — Pause Club" : `${text} — Pause Club`;
+    }
+
+    function setState(next) {
+      state = next;
+      card.dataset.state = state;
+      const locked = state === "running" || state === "paused";
+      minutesInput.disabled = locked;
+      presets.forEach(button => { button.disabled = locked; });
+      toggle.textContent = {
+        ready: "Start my break",
+        running: "Pause",
+        paused: "Resume my break",
+        complete: "Take another break"
+      }[state];
+      status.textContent = {
+        ready: "Your next little moment of calm.",
+        running: "Breathe in. Breathe out. You've got time.",
+        paused: "On pause. Pick it up whenever you're ready.",
+        complete: "All refreshed! Take that good feeling with you."
+      }[state];
+      badge.textContent = {
+        ready: "Ready to unwind",
+        running: "Break in progress",
+        paused: "Taking it slow",
+        complete: "Nicely recharged"
+      }[state];
+      timerLabel.textContent = state === "complete" ? "You're all recharged" : "Time to recharge";
+    }
+
+    function readDuration() {
+      const value = Number(minutesInput.value);
+      const valid = minutesInput.value.trim() !== "" && Number.isInteger(value) && value >= 1 && value <= 180;
+      minutesInput.setAttribute("aria-invalid", String(!valid));
+      durationError.hidden = valid;
+      durationError.textContent = valid ? "" : "Please enter a whole number from 1 to 180 minutes.";
+      toggle.disabled = !valid;
+      presets.forEach(button => {
+        button.setAttribute("aria-pressed", String(valid && Number(button.dataset.minutes) === value));
+      });
+      return valid ? value * 60 * 1000 : null;
+    }
+
+    function applyDuration() {
+      const value = readDuration();
+      if (value === null) return;
+      duration = value;
+      remaining = duration;
+      setState("ready");
+      renderTime();
+    }
+
+    function audioUnavailable() {
+      audioNotice.hidden = false;
+      audioNotice.textContent = "Sound is unavailable in this browser. The visual timer will still work.";
+      sound.checked = false;
+    }
+
+    function prepareAudio() {
+      if (!sound.checked) return;
+      if (!window.AudioContext) {
+        audioUnavailable();
+        return;
+      }
+      try {
+        audioContext ??= new AudioContext();
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch(audioUnavailable);
+        }
+      } catch {
+        audioUnavailable();
+      }
+    }
+
+    function chime() {
+      if (!sound.checked || !audioContext) return;
+      if (audioContext.state !== "running") {
+        audioUnavailable();
+        return;
+      }
+      [523.25, 659.25, 783.99].forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const start = audioContext.currentTime + index * .22;
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(.12, start + .02);
+        gain.gain.exponentialRampToValueAtTime(.001, start + .8);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(start);
+        oscillator.stop(start + .85);
+        oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+      });
+    }
+
+    function celebrate() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const colors = ["#b9a2e3", "#eac28b", "#96bda0", "#e3a9a9"];
+      for (let index = 0; index < 30; index++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.setAttribute("aria-hidden", "true");
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.background = colors[index % colors.length];
+        piece.style.animationDelay = `${Math.random() * .6}s`;
+        piece.addEventListener("animationend", () => piece.remove(), { once: true });
+        document.getElementById("timer-panel").append(piece);
+        setTimeout(() => piece.remove(), 3500);
+      }
+    }
+
+    function clearTick() {
+      clearInterval(interval);
+      interval = null;
+    }
+
+    // A deadline avoids accumulating drift when a background tab throttles timers.
+    function tick() {
+      if (state !== "running") return;
+      remaining = Math.max(0, deadline - Date.now());
+      if (remaining === 0) {
+        clearTick();
+        setState("complete");
+        chime();
+        celebrate();
+      }
+      renderTime();
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      if (state === "running") {
+        tick();
+        if (state === "complete") return;
+        clearTick();
+        setState("paused");
+        return;
+      }
+      if (state !== "paused") {
+        const value = readDuration();
+        if (value === null) {
+          minutesInput.focus();
+          return;
+        }
+        duration = value;
+        remaining = duration;
+      }
+      prepareAudio();
+      deadline = Date.now() + remaining;
+      setState("running");
+      renderTime();
+      interval = setInterval(tick, 100);
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      clearTick();
+      setState("ready");
+      remaining = duration;
+      document.querySelectorAll(".confetti").forEach(piece => piece.remove());
+      readDuration();
+      renderTime();
+    });
+
+    minutesInput.addEventListener("input", applyDuration);
+    presets.forEach(button => {
+      button.addEventListener("click", () => {
+        minutesInput.value = button.dataset.minutes;
+        applyDuration();
+      });
+    });
+    sound.addEventListener("change", () => {
+      audioNotice.hidden = true;
+      prepareAudio();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) tick();
+    });
+    renderTime();
+  </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Dashboard demonstrasi offline untuk masa berlaku sertifikat."
+    >
+    <title>Certificate Expiry Monitor · Pemantauan sertifikat</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='bootstrap.min.css') }}"
+    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body class="app-shell">
+    <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
+    <header class="app-header">
+      <div class="container-xxl app-header__inner">
+        <div class="hero-layout">
+          <div class="hero-copy">
+            <p class="eyebrow">Infrastructure Operations · Demo lokal</p>
+            <h1>Certificate Expiry Monitor</h1>
+            <p class="hero-subtitle">
+              Kenali masa berlaku yang perlu ditinjau—tanpa koneksi ke layanan
+              atau sertifikat produksi.
+            </p>
+          </div>
+          <div class="snapshot-panel" aria-label="Waktu snapshot dashboard">
+            <span class="snapshot-panel__label">Snapshot UTC</span>
+            <time
+              class="snapshot-panel__time"
+              data-testid="snapshot-time"
+              datetime="{{ snapshot_at.isoformat() }}"
+            >{{ snapshot_at.strftime("%Y-%m-%d %H:%M:%S") }} UTC</time>
+            <span class="demo-chip">DEMO <span aria-hidden="true">·</span> READ-ONLY</span>
+          </div>
+        </div>
+        <div class="demo-banner" role="status">
+          <span class="demo-banner__mark" aria-hidden="true">i</span>
+          <div>
+            <strong>Data simulasi/offline</strong>
+            <span>
+              Semua host dan hasil pada halaman ini fiktif; tidak ada
+              pemeriksaan jaringan.
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content" class="container-xxl app-main">
+      <section aria-labelledby="summary-heading" class="summary-section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Gambaran cepat</p>
+            <h2 id="summary-heading">Ringkasan inventaris</h2>
+          </div>
+          <p class="section-note">
+            Jumlah status selalu dihitung dari seluruh inventaris.
+          </p>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-6 g-3">
+          <div class="col">
+            <article class="summary-card summary-card--total" data-testid="summary-total">
+              <span class="summary-label">Total layanan</span>
+              <strong class="summary-value">{{ summary.total }}</strong>
+              <span class="summary-hint">Inventaris demo</span>
+            </article>
+          </div>
+          {% for option in status_options if option.value != "all" %}
+            <div class="col">
+              <article
+                class="summary-card summary-card--{{ option.value }}"
+                data-testid="summary-{{ option.value }}"
+              >
+                <span class="summary-label">{{ option.label }}</span>
+                <strong class="summary-value">{{ summary[option.value] }}</strong>
+                <span class="summary-hint">{{ option.value|upper }}</span>
+              </article>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="filter-panel" aria-label="Filter dan aksi dashboard">
+        <form class="filter-form" method="get" action="{{ url_for('dashboard') }}">
+          <div class="filter-form__field">
+            <label for="status-filter">Filter status</label>
+            <select
+              class="form-select"
+              id="status-filter"
+              name="status"
+            >
+              {% for option in status_options %}
+                <option
+                  value="{{ option.value }}"
+                  {% if option.value == active_filter %}selected{% endif %}
+                >{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button class="btn btn-primary apply-button" type="submit">Terapkan</button>
+        </form>
+        <div class="filter-actions">
+          <a
+            class="refresh-link"
+            href="{{ url_for('dashboard', status=active_filter) }}"
+          >
+            <span class="refresh-link__icon" aria-hidden="true">↻</span>
+            Refresh
+          </a>
+          <span class="result-count" aria-live="polite">
+            <strong>{{ result_count }}</strong> dari {{ summary.total }} layanan
+            ditampilkan
+          </span>
+        </div>
+      </section>
+
+      <section class="table-card" aria-labelledby="inventory-heading">
+        <div class="table-card__heading">
+          <div>
+            <p class="section-kicker">Daftar layanan</p>
+            <h2 id="inventory-heading">Inventaris sertifikat</h2>
+          </div>
+          <span class="table-card__meta">Urut berdasarkan tingkat perhatian</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table monitor-table align-middle">
+            <caption class="visually-hidden">
+              Status masa berlaku sertifikat simulasi
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Nama layanan</th>
+                <th scope="col">Hostname dan port</th>
+                <th scope="col">Environment</th>
+                <th scope="col">Issuer</th>
+                <th scope="col">Kedaluwarsa (UTC)</th>
+                <th scope="col">Sisa</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if visible_assessments %}
+                {% for assessment in visible_assessments %}
+                  {% set entry = assessment.entry %}
+                  {% set status_code = assessment.status.value %}
+                  <tr
+                    class="certificate-row certificate-row--{{ status_code|lower }}"
+                    data-certificate-id="{{ entry.id }}"
+                    data-status="{{ status_code }}"
+                  >
+                    <th scope="row" class="service-cell">
+                      <span class="service-name">{{ entry.name }}</span>
+                      <span class="service-id">ID · {{ entry.id }}</span>
+                    </th>
+                    <td><code class="hostname">{{ entry.hostname }}:{{ entry.port }}</code></td>
+                    <td><span class="environment-chip">{{ entry.environment }}</span></td>
+                    <td class="issuer-cell">{{ entry.issuer if entry.issuer else "—" }}</td>
+                    <td class="expiry-cell">
+                      {% if entry.expires_at %}
+                        <time datetime="{{ entry.expires_at.isoformat() }}">{{ entry.expires_at.strftime("%Y-%m-%d %H:%M:%S") }} UTC</time>
+                      {% else %}
+                        <span class="unknown-value" aria-label="Tidak diketahui">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <span class="remaining-value">{{ assessment.remaining_label }}</span>
+                    </td>
+                    <td class="status-cell">
+                      <span
+                        class="status-badge status-badge--{{ status_code|lower }}"
+                        aria-label="{{ assessment.status_label }} ({{ status_code }})"
+                      >
+                        <span class="status-dot" aria-hidden="true"></span>
+                        <span>{{ assessment.status_label }}</span>
+                      </span>
+                      <span class="status-code">{{ status_code }}</span>
+                      {% if entry.error_reason %}
+                        <span class="error-reason">{{ entry.error_reason }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="7" class="empty-cell">
+                    <div class="empty-state" data-testid="empty-state">
+                      <span class="empty-state__icon" aria-hidden="true">⌕</span>
+                      <strong>Tidak ada hasil untuk filter ini</strong>
+                      <span>{{ empty_message }}</span>
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="app-footer">
+        <span class="footer-mark" aria-hidden="true">i</span>
+        <p>
+          Demo ini hanya menilai masa berlaku dari data fiktif. Status bukan
+          pemeriksaan trust, chain, hostname, atau revocation TLS.
+        </p>
+        <span class="footer-version">MODE DEMO · OFFLINE</span>
+      </footer>
+    </main>
+  </body>
+</html>

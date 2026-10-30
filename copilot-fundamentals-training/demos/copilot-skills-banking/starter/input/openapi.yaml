@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Bank Nusa Demo - synthetic contract
+  version: 1.0.0
+  description: SINTETIS. Contract fixture only; no running API or real banking access.
+servers:
+  - url: http://localhost:4010
+    description: Illustrative local address only. No server is included.
+paths:
+  /demo/complaints:
+    post:
+      summary: Create a synthetic complaint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, reference, description]
+              properties:
+                customer_id:
+                  type: string
+                  example: SYN-C001
+                reference:
+                  type: string
+                  example: SYN-TX001
+                description:
+                  type: string
+                  example: Dummy transfer status inquiry
+      responses:
+        '201':
+          description: Case created
+        '400':
+          description: Incomplete synthetic input
+  /demo/payments/{reference}/status:
+    get:
+      summary: Read-only Core Banking Simulator lookup
+      parameters:
+        - in: path
+          name: reference
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Synthetic status; no monetary operations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reference:
+                    type: string
+                  status:
+                    type: string
+                    enum: [PENDING, COMPLETED, UNKNOWN]
+  /demo/complaints/{id}/close:
+    post:
+      summary: Close only after resolution, notification receipt, and audit evidence
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Closed with audit event
+        '409':
+          description: Resolution or successful notification evidence is missing

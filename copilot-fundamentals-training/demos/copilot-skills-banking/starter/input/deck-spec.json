@@ -1,0 +1,90 @@
+{
+  "title": "Bank Nusa Demo - Review Penanganan Keluhan",
+  "synthetic": true,
+  "diagramFile": "diagram-layouts.json",
+  "slides": [
+    {
+      "kind": "title",
+      "title": "Dari keluhan ke keputusan yang bisa ditelusuri",
+      "subtitle": "Review proses layanan transfer: dokumentasi yang konsisten, arsitektur yang jujur, dan keputusan dengan kontrol manusia.",
+      "sources": ["input/deck-brief.md", "input/meeting-notes.md"],
+      "notes": "Bank Nusa Demo adalah fiktif. Tujuan sesi meminta review SOP dan eksplorasi desain, bukan persetujuan go-live."
+    },
+    {
+      "kind": "metrics",
+      "title": "Baseline kecil, terukur, dan sepenuhnya sintetis",
+      "metrics": [
+        { "value": "12", "label": "Kasus dalam sampel", "detail": "Kasus biasa, lengkap, resolved; 19 Oktober 2026." },
+        { "value": "75%", "label": "Ack dalam <= 15 menit", "detail": "9 dari 12 kasus. Tepat 15 menit masih memenuhi." },
+        { "value": "5 / 12", "label": "Resolusi > 120 menit", "detail": "Durasi resolusi; bukan bukti eskalasi atau root cause." }
+      ],
+      "sources": ["input/complaints.csv", "input/business-policy.md"],
+      "notes": "Hitung selisih timestamp WIB. Ack terlambat pada C002, C006, C009. Resolusi melewati 120 pada C002, C004, C006, C009, C012. Ini bukan KPI produksi."
+    },
+    {
+      "kind": "diagram",
+      "title": "Proses baseline: jelas siapa dan kapan bertindak",
+      "diagramKey": "business-process",
+      "sources": ["input/business-policy.md"],
+      "notes": "Ack <=15 menit. Data kurang lengkap tidak menghentikan jam. Fraud segera ke supervisor. Kasus aktif >=120 menit dieskalasi manual. Close membutuhkan resolved, receipt sukses, dan audit."
+    },
+    {
+      "kind": "diagram",
+      "title": "Arsitektur as-is: fixture, bukan sistem bank nyata",
+      "diagramKey": "architecture-containers",
+      "sources": ["input/system-landscape.md", "input/openapi.yaml"],
+      "notes": "C4 Container adalah tingkat detail, bukan deployment. Simulator hanya GET status. Tidak ada scheduler, outbox, broker, atau retry worker di as-is."
+    },
+    {
+      "kind": "bullets",
+      "title": "USULAN: eksplorasi desain, belum implementasi",
+      "bullets": [
+        "SLA Scheduler untuk menandai kasus aktif pada ambang baseline >=120 menit.",
+        "Transactional outbox dan worker untuk retry notifikasi yang durable.",
+        "Idempotency dan deduplikasi perlu didesain; bukan jaminan exactly-once.",
+        "Pertahankan simulator read-only dan keputusan sensitif oleh manusia.",
+        "Target KPI baru, biaya, PIC individu, dan persetujuan implementasi: TBD."
+      ],
+      "sources": ["input/system-landscape.md", "input/meeting-notes.md"],
+      "notes": "Usulan berbeda dari as-is. Scheduler dan outbox dapat menambah kompleksitas. ADR harus membandingkan alternatif sebelum keputusan."
+    },
+    {
+      "kind": "table",
+      "title": "Roadmap berbasis tahap, bukan janji tanggal",
+      "headers": ["Tahap", "Hasil review", "PIC / tanggal"],
+      "rows": [
+        ["1. Validasi proses", "SOP + diagram baseline konsisten", "TBD / TBD"],
+        ["2. Evaluasi desain", "ADR Proposed + alternatif dan trade-off", "TBD / TBD"],
+        ["3. Uji simulasi", "Boundary SLA + failure notifikasi", "TBD / TBD"],
+        ["4. Keputusan", "Approval sebelum implementasi", "TBD / TBD"]
+      ],
+      "sources": ["input/meeting-notes.md", "input/issue-backlog.md"],
+      "notes": "Ini usulan urutan kerja, tidak ada komitmen kalender atau PIC individu. Uji 119, 120, 121 menit dan close tanpa receipt."
+    },
+    {
+      "kind": "bullets",
+      "title": "Risiko dan kontrol yang tidak boleh hilang",
+      "bullets": [
+        "Output AI harus direview: narasi, diagram, metrik, dan asumsi bisa berbeda.",
+        "Kegagalan notifikasi tidak boleh menghasilkan kasus closed.",
+        "Fraud selalu ke review manusia; tidak ada blokir otomatis.",
+        "Jangan mengklaim compliance atau manfaat finansial dari fixture workshop.",
+        "Kapasitas, retensi audit, RTO/RPO, dan deployment target masih TBD."
+      ],
+      "sources": ["input/business-policy.md", "input/system-landscape.md"],
+      "notes": "Batas kemampuan dokumentasi harus eksplisit. Tidak ada akses produksi; isu dipersiapkan lokal saja."
+    },
+    {
+      "kind": "bullets",
+      "title": "Keputusan yang diminta dari stakeholder",
+      "bullets": [
+        "Review SOP dan diagram baseline versi 1.0 sebagai materi simulasi.",
+        "Setujui atau tolak eksplorasi scheduler dan outbox, bukan go-live.",
+        "Tentukan approver, PIC individu, dan tanggal setelah sesi; saat ini TBD.",
+        "Gunakan draft issue lokal sebagai bahan diskusi sebelum publikasi."
+      ],
+      "sources": ["input/deck-brief.md", "input/meeting-notes.md"],
+      "notes": "Tutup dengan keputusan spesifik. Tidak ada artefak yang diterbitkan otomatis. Seluruh materi tetap sintetis dan bukan ketentuan regulator."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+! SIMULATION ONLY - snapshot sumber
+hostname DC-SW-02
+interface GigabitEthernet0/2
+ description SERVER-ACCESS
+ switchport access vlan 10
+ no shutdown
+! Admin up tidak menjamin operational up.

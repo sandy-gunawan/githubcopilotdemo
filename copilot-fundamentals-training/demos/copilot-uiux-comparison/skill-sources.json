@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "ui-ux-pro-max",
+    "Repository": "nextlevelbuilder/ui-ux-pro-max-skill",
+    "Source": ".claude/skills/ui-ux-pro-max/SKILL.md",
+    "Revision": "28b3b8dee8c976df4fa3e94aed4e092ad43fcb03",
+    "Case": "dashboard",
+    "OptimizedSkill": "nusa-operations-design",
+    "License": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/28b3b8dee8c976df4fa3e94aed4e092ad43fcb03/LICENSE",
+    "LicenseName": "MIT"
+  },
+  {
+    "Name": "frontend-design",
+    "Repository": "anthropics/skills",
+    "Source": "skills/frontend-design",
+    "Revision": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+    "Case": "landing",
+    "OptimizedSkill": "nusa-landing-design",
+    "License": "",
+    "LicenseName": "Apache-2.0"
+  }
+]

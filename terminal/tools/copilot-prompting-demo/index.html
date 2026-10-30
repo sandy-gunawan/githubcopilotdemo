@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Panduan praktik GitHub Copilot: belajar memberi instruksi yang jelas, memecah tugas, dan memeriksa hasil melalui demo Python selama 10-15 menit.">
+  <title>Copilot Prompting Lab | Panduan Praktik</title>
+  <style>
+    :root {
+      --paper: #f5f7fa;
+      --white: #fff;
+      --ink: #172b3a;
+      --muted: #536575;
+      --line: #dde5eb;
+      --accent: #096b60;
+      --accent-light: #e8f5f0;
+      --navy: #102c3b;
+      --mono: Consolas, "Cascadia Code", monospace;
+      --sidebar: 262px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font: 16px/1.75 "Segoe UI", Arial, sans-serif; }
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid #197bbd; outline-offset: 4px; }
+    [hidden] { display: none !important; }
+    .needs-js { display: none; }
+    .js .needs-js { display: inline-flex; }
+    .skip-link { position: fixed; top: -80px; left: 20px; z-index: 20; padding: 10px 20px; background: var(--white); }
+    .skip-link:focus { top: 10px; }
+    .sidebar { position: fixed; inset: 0 auto 0 0; width: var(--sidebar); background: var(--white); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 32px 22px 22px; overflow-y: auto; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; line-height: 1.35; }
+    .brand-mark { width: 40px; height: 40px; border-radius: 12px; background: var(--accent); color: white; display: grid; place-items: center; font: 700 20px var(--mono); flex-shrink: 0; }
+    .brand strong { display: block; font-size: 15px; letter-spacing: -.3px; }
+    .brand small { display: block; color: var(--muted); font-size: 11px; letter-spacing: 1px; margin-top: 3px; text-transform: uppercase; }
+    .nav-group { margin-top: 30px; }
+    .nav-title { margin: 0 12px 9px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1.7px; text-transform: uppercase; }
+    .nav-link { display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 8px 11px; margin-top: 3px; font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; line-height: 1.5; border: 1px solid transparent; }
+    .nav-link:hover { color: var(--ink); background: #f4f7f9; }
+    .nav-link[aria-current="location"] { color: var(--accent); background: var(--accent-light); border-color: #cee7dd; font-weight: 650; }
+    .nav-number { display: grid; place-items: center; width: 23px; height: 23px; background: #eef2f5; color: var(--muted); border-radius: 6px; font-size: 11px; flex-shrink: 0; font-family: var(--mono); }
+    [aria-current="location"] .nav-number { color: white; background: var(--accent); }
+    .sidebar-note { margin: auto 8px 0; padding-top: 30px; font-size: 11px; color: var(--muted); }
+    .sidebar-note strong { display: block; color: var(--ink); font-size: 12px; margin-bottom: 5px; }
+    .sidebar-note p { margin: 0; }
+    .topbar { position: sticky; top: 0; z-index: 9; margin-left: var(--sidebar); height: 72px; border-bottom: 1px solid var(--line); background: #f5f7faf5; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 44px; backdrop-filter: blur(12px); }
+    .breadcrumbs { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); }
+    .breadcrumbs strong { color: var(--ink); font-weight: 600; }
+    .top-actions { display: flex; align-items: center; gap: 15px; }
+    .offline { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); }
+    .offline::before { content: ""; height: 6px; width: 6px; background: var(--accent); border-radius: 50%; }
+    .button { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 42px; border: 1px solid var(--line); border-radius: 9px; padding: 9px 16px; color: var(--ink); background: white; font-size: 13px; font-weight: 600; text-decoration: none; line-height: 1.5; }
+    .button:hover { border-color: #99b4ac; background: #f1f8f5; }
+    .button.primary { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px #096b6018; }
+    .button.primary:hover { background: #07574e; }
+    .button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    .button:disabled { cursor: default; opacity: .4; }
+    .button svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .js .menu-toggle { display: none; }
+    main { margin-left: var(--sidebar); padding: 48px 44px 100px; min-width: 0; }
+    .page-width { max-width: 1100px; margin: auto; }
+    .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 38px; align-items: center; padding: 14px 0 36px; }
+    .eyebrow { font-size: 10px; font-weight: 750; letter-spacing: 1.9px; text-transform: uppercase; color: var(--accent); }
+    .hero-tag { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border: 1px solid #cce4dc; background: var(--accent-light); border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--accent); text-transform: uppercase; }
+    .hero h1 { font-size: clamp(36px, 3.8vw, 55px); line-height: 1.12; letter-spacing: -2px; margin: 20px 0; font-weight: 720; }
+    .hero h1 span { color: var(--accent); }
+    .hero-description { max-width: 470px; font-size: 15px; color: var(--muted); line-height: 1.85; margin: 0; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .lab-visual { position: relative; border: 1px solid #234657; border-radius: 15px; background: var(--navy); color: #e7eff4; box-shadow: 0 20px 35px #173c4c16; overflow: hidden; transform: rotate(1deg); }
+    .visual-bar { padding: 13px 18px; border-bottom: 1px solid #ffffff15; display: flex; align-items: center; gap: 5px; }
+    .visual-dot { width: 6px; height: 6px; border-radius: 50%; background: #78909c; }
+    .visual-bar small { margin-left: 9px; font: 10px var(--mono); color: #b4c8d2; }
+    .visual-content { padding: 25px; }
+    .visual-comment { color: #a4bbc8; font: 11px var(--mono); margin-bottom: 13px; }
+    .visual-code { font: 12px/1.9 var(--mono); overflow-wrap: anywhere; }
+    .visual-code .string { color: #a8e8d0; }
+    .visual-result { display: flex; justify-content: space-between; gap: 10px; margin: 21px 0 20px; padding: 13px 15px; border: 1px solid #ffffff1f; background: #ffffff07; border-radius: 8px; font-size: 11px; }
+    .visual-result code { color: #a8e8d0; font: 12px var(--mono); }
+    .test-flow { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid #ffffff15; padding-top: 18px; }
+    .test-flow div { font-size: 10px; color: #bbccd5; }
+    .test-flow strong { display: block; color: #b0eed7; font-size: 12px; margin-top: 3px; font-weight: 600; }
+    .test-flow .expected-fail { color: #fbd395; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .metric { display: flex; align-items: center; gap: 14px; padding: 17px 20px; border: 1px solid var(--line); border-radius: 11px; background: var(--white); }
+    .metric-symbol { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #f0f5f5; color: var(--accent); font: 600 16px var(--mono); flex-shrink: 0; }
+    .metric strong { display: block; font-size: 15px; line-height: 1.4; }
+    .metric span:not(.metric-symbol) { color: var(--muted); font-size: 11px; }
+    .route { margin: 40px 0; }
+    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 14px; }
+    .section-heading h2 { font-size: 15px; margin: 0; letter-spacing: -.2px; }
+    .section-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .route-grid { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--white); }
+    .route-card { color: var(--ink); text-decoration: none; padding: 17px 16px; border-right: 1px solid var(--line); }
+    .route-card:last-child { border-right: 0; }
+    .route-card:hover { background: var(--accent-light); }
+    .route-card .eyebrow { display: block; font-size: 9px; letter-spacing: 1px; margin-bottom: 9px; }
+    .route-card strong { display: block; font-size: 12px; }
+    .route-card small { display: block; color: var(--muted); font-size: 10px; margin-top: 4px; line-height: 1.6; }
+    .content-divider { display: flex; align-items: center; gap: 15px; font-size: 10px; font-weight: 700; letter-spacing: 1.8px; color: var(--muted); text-transform: uppercase; margin: 36px 0 22px; }
+    .content-divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+    .guide-section { padding: 30px 34px; margin-bottom: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); box-shadow: 0 3px 6px #233f4b02; min-width: 0; }
+    .chapter-label { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; margin: 0 0 10px; }
+    .guide-section h2 { font-size: 24px; font-weight: 700; letter-spacing: -.7px; line-height: 1.35; margin: 0 0 22px; scroll-margin-top: 20px; }
+    .guide-section h3 { font-size: 17px; line-height: 1.5; margin: 30px 0 13px; letter-spacing: -.2px; scroll-margin-top: 20px; }
+    .guide-section p, .guide-section li { font-size: 14px; }
+    .guide-section p { margin: 13px 0; }
+    .guide-section ul, .guide-section ol { padding-left: 23px; }
+    .guide-section li { margin: 6px 0; padding-left: 3px; }
+    .guide-section > :last-child { margin-bottom: 0; }
+    .guide-section strong { font-weight: 650; }
+    .guide-section :not(pre) > code { color: #175c58; background: #edf5f2; font: .88em/1.6 var(--mono); border: 1px solid #dfece7; padding: 2px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+    .step-section { border-top: 3px solid var(--accent); }
+    .step-section .chapter-label { color: var(--accent); }
+    .step-status { display: inline-block; font-size: 11px; line-height: 1.5; color: var(--accent); background: var(--accent-light); border: 1px solid #cce4dc; border-radius: 6px; padding: 5px 10px; margin: -5px 0 15px; font-weight: 600; }
+    .step-status.warning { color: #85500a; background: #fff5df; border-color: #f0d7a4; }
+    blockquote { margin: 18px 0; padding: 10px 19px; border-left: 3px solid #bed4ce; background: #f7faf9; color: #405d60; border-radius: 0 7px 7px 0; }
+    blockquote p { margin: 6px 0 !important; }
+    .markdown-alert { border: 1px solid #d5e6f4; border-left: 3px solid #4d83b4; border-radius: 7px; background: #f1f7fc; padding: 13px 20px; margin: 20px 0; }
+    .markdown-alert-title { display: flex; align-items: center; gap: 7px; color: #32628a; font-size: 10px !important; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin: 0 0 8px !important; }
+    .markdown-alert-title svg { fill: currentColor; }
+    .markdown-alert-important { background: #eef8f3; border-color: #cce6db; border-left-color: var(--accent); }
+    .markdown-alert-important .markdown-alert-title { color: var(--accent); }
+    .markdown-alert > p:last-child { margin-bottom: 0; }
+    .table-scroll { overflow-x: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 9px; }
+    .table-scroll:focus-visible { outline-offset: 2px; }
+    table { border-collapse: collapse; width: 100%; text-align: left; font-size: 12px; line-height: 1.7; }
+    th { background: #f0f4f7; color: #455e6e; font-weight: 650; }
+    td, th { padding: 12px 15px; border-bottom: 1px solid var(--line); vertical-align: top; min-width: 125px; overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:nth-child(even) { background: #fafcfd; }
+    .code-block { margin: 20px 0; border: 1px solid #294451; border-radius: 9px; overflow: hidden; background: var(--navy); }
+    .code-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 42px; padding: 8px 14px; background: #ffffff06; border-bottom: 1px solid #ffffff12; color: #bdcfd9; font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; }
+    .code-toolbar span { display: flex; align-items: center; gap: 8px; }
+    .code-toolbar span::before { content: ""; height: 5px; width: 5px; border-radius: 50%; background: #8cabbc; }
+    .copy-button { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border: 1px solid #62808d; border-radius: 5px; color: #e5eff5; background: #ffffff08; font-size: 10px; line-height: 1.5; font-weight: 500; text-transform: none; letter-spacing: 0; }
+    .copy-button:hover { background: #ffffff18; }
+    .copy-button svg { height: 12px; width: 12px; }
+    pre { margin: 0; overflow-x: auto; padding: 20px; tab-size: 4; color: #e2edf3; font: 12px/1.85 var(--mono); }
+    pre code { font: inherit; }
+    .prompt-block { border-color: #a9cec0; background: #f5faf7; }
+    .prompt-block .code-toolbar { color: #185f50; background: #e8f4ee; border-bottom-color: #d3e6dc; }
+    .prompt-block .code-toolbar span::before { background: var(--accent); }
+    .prompt-block .copy-button { color: #185f50; background: #ffffffb3; border-color: #a9cec0; }
+    .prompt-block .copy-button:hover { background: white; }
+    .prompt-block pre { color: #203d38; white-space: pre-wrap; overflow-wrap: anywhere; }
+    details { border: 1px solid var(--line); padding: 15px 20px; background: var(--white); border-radius: 10px; margin: 22px 0; }
+    details summary { cursor: pointer; font-size: 13px; font-weight: 650; color: var(--muted); }
+    details[open] summary { margin-bottom: 20px; }
+    .source-intro p, .source-intro li { font-size: 13px; }
+    .source-intro p { margin: 12px 0; }
+    .source-link { color: var(--muted); font-size: 11px; }
+    .checklist { list-style: none; padding: 0 !important; counter-reset: none; }
+    .checklist li { padding: 11px 12px; background: #f7f9fb; border: 1px solid #e6ecf0; border-radius: 7px; margin: 8px 0; }
+    .checklist label { display: flex; gap: 12px; align-items: baseline; cursor: pointer; }
+    .checklist input { accent-color: var(--accent); width: 16px; height: 16px; flex: 0 0 16px; transform: translateY(3px); }
+    .checklist input:checked + span { color: #597168; text-decoration: line-through; text-decoration-color: #b5c8bf; }
+    .checklist-meter { padding: 13px 16px; border-radius: 8px; border: 1px solid #cee4da; background: var(--accent-light); color: var(--accent); font-size: 12px; margin: 16px 0; }
+    .checklist-meter progress { width: 100%; height: 6px; display: block; margin-top: 9px; accent-color: var(--accent); }
+    .footer { display: flex; align-items: start; justify-content: space-between; gap: 24px; padding: 12px 4px 0; color: var(--muted); font-size: 11px; }
+    .footer strong { display: block; color: var(--ink); font-size: 12px; margin-bottom: 3px; }
+    .footer p { margin: 0; max-width: 570px; }
+    .toast { position: fixed; bottom: 24px; left: calc(50% + var(--sidebar) / 2); transform: translateX(-50%); z-index: 30; border: 1px solid #427263; background: #173d32; color: white; padding: 12px 20px; font-size: 12px; border-radius: 9px; max-width: min(500px, 85vw); box-shadow: 0 6px 20px #0002; }
+    .toast:empty { display: none; }
+    .demo-dock { position: fixed; bottom: 18px; left: calc(50% + var(--sidebar) / 2); transform: translateX(-50%); z-index: 12; display: flex; align-items: center; gap: 18px; padding: 10px 14px; background: var(--white); border: 1px solid #c7d9d3; border-radius: 12px; box-shadow: 0 8px 30px #173d321a; }
+    .dock-label { text-align: center; font-size: 12px; white-space: nowrap; color: var(--muted); line-height: 1.5; }
+    .dock-label strong { display: block; font-size: 13px; color: var(--accent); }
+    .demo-mode .hero, .demo-mode .metrics, .demo-mode .route, .demo-mode .source-intro, .demo-mode .content-divider, .demo-mode .guide-section:not(.current-step), .demo-mode .footer { display: none; }
+    .demo-mode .toast { bottom: 105px; }
+    .demo-mode main { padding-top: 30px; padding-bottom: 130px; }
+    .demo-mode .current-step { animation: enter .2s ease-out; }
+    .noscript-note { padding: 12px 18px; border: 1px solid #e9cd9d; background: #fff6e6; border-radius: 8px; font-size: 13px; margin-bottom: 20px; }
+    @keyframes enter { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @media (min-width: 1600px) { main { padding-top: 60px; } .hero { gap: 60px; } }
+    @media (max-width: 1200px) {
+      :root { --sidebar: 235px; }
+      .sidebar { padding: 26px 15px 20px; }
+      .topbar { padding: 0 28px; }
+      main { padding: 35px 28px 80px; }
+      .hero { gap: 24px; }
+      .hero h1 { font-size: 41px; }
+      .visual-content { padding: 20px; }
+      .metric { padding: 15px; gap: 10px; }
+      .route-card { padding: 15px 12px; }
+    }
+    @media (max-width: 980px) {
+      :root { --sidebar: 0px; }
+      .sidebar { position: fixed; inset: 64px 0 0; width: auto; height: calc(100dvh - 64px); border-right: 0; border-bottom: 1px solid var(--line); display: none; padding: 24px; }
+      body.menu-open { overflow: hidden; }
+      .menu-open .sidebar { display: block; }
+      .sidebar .brand, .sidebar-note { display: none; }
+      .nav-group { margin-top: 18px; }
+      .nav-group:first-of-type { margin-top: 0; }
+      .topbar { margin-left: 0; padding: 0 26px; height: 64px; }
+      .js .menu-toggle { display: inline-flex; }
+      .breadcrumbs { margin-right: auto; }
+      main { margin-left: 0; padding: 32px 26px 80px; }
+      .hero h1 { font-size: 45px; }
+      .hero { gap: 30px; }
+      .guide-section { padding: 28px; }
+      .demo-dock, .toast { left: 50%; }
+    }
+    @media (max-width: 680px) {
+      body { font-size: 15px; }
+      .topbar { padding: 0 16px; gap: 10px; }
+      .breadcrumbs { font-size: 11px; gap: 6px; }
+      .breadcrumbs > span { display: none; }
+      .top-actions { gap: 8px; }
+      .offline, .print-label { display: none; }
+      .topbar .button { padding: 8px 10px; min-height: 38px; font-size: 11px; }
+      main { padding: 26px 16px 60px; }
+      .hero { grid-template-columns: 1fr; gap: 27px; padding-top: 2px; padding-bottom: 26px; }
+      .hero h1 { font-size: 43px; letter-spacing: -1.6px; max-width: 440px; }
+      .hero-description { font-size: 14px; }
+      .hero-actions .button { flex: 1; }
+      .lab-visual { transform: none; }
+      .visual-content { padding: 23px; }
+      .metrics { gap: 8px; }
+      .metric { display: block; padding: 13px 10px; }
+      .metric-symbol { display: none; }
+      .metric strong { font-size: 13px; }
+      .metric span:not(.metric-symbol) { font-size: 10px; line-height: 1.6; display: block; margin-top: 3px; }
+      .route { margin: 28px 0; }
+      .section-heading { align-items: start; flex-direction: column; gap: 3px; }
+      .route-grid { grid-template-columns: 1fr; }
+      .route-card { display: grid; grid-template-columns: 77px 1fr; gap: 1px 10px; padding: 12px 15px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .route-card:last-child { border-bottom: 0; }
+      .route-card .eyebrow { grid-row: span 2; align-self: center; margin: 0; }
+      .route-card small { margin: 0; }
+      .guide-section { padding: 23px 18px; border-radius: 11px; margin-bottom: 16px; }
+      .guide-section h2 { font-size: 22px; }
+      .guide-section h3 { font-size: 16px; }
+      .guide-section p, .guide-section li { font-size: 13px; }
+      .markdown-alert { padding: 12px 15px; }
+      pre { padding: 16px; font-size: 11px; }
+      .code-toolbar { padding: 8px 11px; letter-spacing: .3px; font-size: 9px; }
+      td, th { padding: 10px 12px; }
+      .footer { flex-direction: column; gap: 12px; }
+      .demo-dock { width: calc(100% - 24px); justify-content: space-between; gap: 8px; bottom: 10px; }
+      .demo-dock .button { padding: 8px 10px; font-size: 11px; }
+      .dock-label, .dock-label strong { font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+    @media print {
+      @page { margin: 16mm; }
+      body { background: white; color: black; font-size: 11pt; }
+      body.menu-open { overflow: visible; }
+      .sidebar, .topbar, .hero-actions, .route, .demo-dock, .toast, .copy-button, .source-intro, .skip-link { display: none !important; }
+      main, .demo-mode main { margin: 0; padding: 0; }
+      .demo-mode .hero, .demo-mode .metrics, .demo-mode .guide-section, .demo-mode .guide-section:not(.current-step), .demo-mode .footer { display: block; }
+      .hero { display: block; padding: 0 0 20px; }
+      .hero h1 { font-size: 30pt; }
+      .lab-visual { display: none; }
+      .metrics { display: flex; }
+      .metric { flex: 1; margin-right: 10px; }
+      .guide-section { border: 0; border-top: 1px solid #bbb; border-radius: 0; padding: 20px 0; box-shadow: none; }
+      .guide-section h2, .guide-section h3, .chapter-label { break-after: avoid; }
+      .step-status { border-color: #bbb; }
+      .code-block, .prompt-block { background: #f6f6f6; border-color: #bbb; break-inside: avoid; }
+      .code-toolbar, .prompt-block .code-toolbar { background: #eee; color: black; border-color: #bbb; }
+      pre, .prompt-block pre { color: black; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 9pt; }
+      .table-scroll { overflow: visible; }
+      tr, .markdown-alert, blockquote, .checklist li { break-inside: avoid; }
+      a { color: inherit; }
+      .footer { margin-top: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#konten">Lewati navigasi, ke isi panduan</a>
+  <header class="topbar">
+    <button class="button menu-toggle needs-js" id="menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Buka navigasi panduan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="breadcrumbs"><span>Panduan praktik</span><span aria-hidden="true">/</span><strong>GitHub Copilot</strong></div>
+    <div class="top-actions">
+      <span class="offline">Bisa dibaca offline</span>
+      <button class="button needs-js" id="demo-toggle" type="button" aria-pressed="false">Mode demo</button>
+      <button class="button needs-js" id="print-guide" type="button" aria-label="Cetak atau simpan panduan sebagai PDF">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></svg>
+        <span class="print-label">Cetak / PDF</span>
+      </button>
+    </div>
+  </header>
+  <aside class="sidebar" id="sidebar" aria-label="Navigasi panduan">
+    <a class="brand" href="#mulai"><span class="brand-mark" aria-hidden="true">&gt;_</span><span><strong>Copilot Prompting Lab</strong><small>Workshop playbook</small></span></a>
+    <nav aria-label="Daftar isi">
+      <div class="nav-group">
+        <p class="nav-title">Orientasi</p>
+        <a class="nav-link" href="#mulai" aria-current="location">Sekilas panduan</a>
+        <a class="nav-link" href="#apa-tujuan-demo-ini">Tujuan &amp; istilah</a>
+        <a class="nav-link" href="#cerita-yang-dipakai">Skenario latihan</a>
+        <a class="nav-link" href="#mengapa-tugas-perlu-dipecah">Prinsip prompting</a>
+        <a class="nav-link" href="#folder-dan-file-yang-dipakai">Folder &amp; file</a>
+        <a class="nav-link" href="#ringkasan-alur-demo">Peta alur demo</a>
+      </div>
+      <div class="nav-group">
+        <p class="nav-title">Praktik langkah demi langkah</p>
+        <a class="nav-link" href="#langkah-0-buka-folder-yang-benar"><span class="nav-number">0</span>Siapkan workspace</a>
+        <a class="nav-link" href="#langkah-1-buat-program-awal"><span class="nav-number">1</span>Buat program awal</a>
+        <a class="nav-link" href="#langkah-2-buat-tiga-pemeriksaan-otomatis"><span class="nav-number">2</span>Periksa dengan tes</a>
+        <a class="nav-link" href="#langkah-3-tambahkan-aturan-baru-melalui-tes"><span class="nav-number">3</span>Tambahkan aturan baru</a>
+        <a class="nav-link" href="#langkah-4-ubah-program-sesuai-aturan-baru"><span class="nav-number">4</span>Perbaiki &amp; periksa lagi</a>
+      </div>
+      <div class="nav-group">
+        <p class="nav-title">Referensi fasilitator</p>
+        <a class="nav-link" href="#penjelasan-kode-dengan-bahasa-sederhana">Memahami kode</a>
+        <a class="nav-link" href="#kalimat-penutup-untuk-peserta">Pesan penutup</a>
+        <a class="nav-link" href="#contoh-kode-lengkap-untuk-persiapan">Contoh kode A-D</a>
+        <a class="nav-link" href="#bantuan-jika-demo-tidak-sesuai">Bantuan &amp; solusi</a>
+        <a class="nav-link" href="#hasil-pemeriksaan-panduan">Bukti pemeriksaan materi</a>
+        <a class="nav-link" href="#daftar-periksa-sebelum-presentasi">Checklist persiapan</a>
+      </div>
+    </nav>
+    <div class="sidebar-note"><strong>Buat. Periksa. Perbaiki.</strong><p>Copilot membantu menulis kode.<br>Anda tetap memeriksa hasilnya.</p></div>
+  </aside>
+  <main id="konten" tabindex="-1">
+    <div class="page-width">
+      <noscript><div class="noscript-note">Seluruh materi tetap bisa dibaca. Aktifkan JavaScript untuk navigasi mobile, tombol salin, dan mode demo. Untuk mencetak, gunakan menu Cetak pada browser.</div></noscript>
+      <section class="hero" id="mulai" aria-labelledby="hero-title">
+        <div>
+          <span class="hero-tag">Python &middot; Pemula &middot; Panduan fasilitator</span>
+          <h1 id="hero-title">Prompt yang jelas.<br>Hasil yang bisa<br><span>diperiksa.</span></h1>
+          <p class="hero-description">Belajar mengarahkan GitHub Copilot lewat satu kasus sederhana: mencari barang berulang dalam daftar belanja. Satu tugas kecil, satu pemeriksaan, lalu langkah berikutnya.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#langkah-0-buka-folder-yang-benar">Mulai praktik <span aria-hidden="true">&rarr;</span></a>
+            <a class="button" href="#ringkasan-alur-demo">Lihat alur demo</a>
+          </div>
+        </div>
+        <div class="lab-visual" aria-label="Ilustrasi aturan baru: Milk dan milk dianggap sama, hasil tetap memakai penulisan Milk. Alur tes: tiga lulus, satu dari empat gagal, lalu empat lulus.">
+          <div class="visual-bar" aria-hidden="true"><i class="visual-dot"></i><i class="visual-dot"></i><i class="visual-dot"></i><small>duplicates.py &mdash; gambaran hasil akhir</small></div>
+          <div class="visual-content" aria-hidden="true">
+            <div class="visual-comment"># Satu contoh. Aturan yang jelas.</div>
+            <div class="visual-code">items = [<span class="string">"Milk"</span>, <span class="string">"bread"</span>, <span class="string">"milk"</span>]<br>find_duplicates(items)</div>
+            <div class="visual-result"><span>Hasil dengan aturan baru</span><code>["Milk"]</code></div>
+            <div class="test-flow"><div>ATURAN AWAL<strong>3 tes lulus</strong></div><div>KEBUTUHAN BARU<strong class="expected-fail">1 dari 4 gagal</strong></div><div>SETELAH REPAIR<strong>4 tes lulus</strong></div></div>
+          </div>
+        </div>
+      </section>
+      <div class="metrics" aria-label="Informasi singkat demo">
+        <div class="metric"><span class="metric-symbol" aria-hidden="true">15&prime;</span><div><strong>10-15 menit</strong><span>Durasi demo langsung</span></div></div>
+        <div class="metric"><span class="metric-symbol" aria-hidden="true">05</span><div><strong>5 tahapan</strong><span>Persiapan + 4 langkah praktik</span></div></div>
+        <div class="metric"><span class="metric-symbol" aria-hidden="true">Py</span><div><strong>Python 3.11+</strong><span>Tanpa paket tambahan</span></div></div>
+      </div>
+      <section class="route" aria-labelledby="route-title">
+        <div class="section-heading"><h2 id="route-title">Rute belajar Anda</h2><p>Ikuti urutannya. Periksa hasil sebelum melanjutkan.</p></div>
+        <div class="route-grid">
+          <a class="route-card" href="#langkah-0-buka-folder-yang-benar"><span class="eyebrow">00 &middot; Siapkan</span><strong>Samakan lokasi</strong><small>Workspace &amp; terminal</small></a>
+          <a class="route-card" href="#langkah-1-buat-program-awal"><span class="eyebrow">01 &middot; Generate</span><strong>Buat program</strong><small>Satu fungsi, aturan awal</small></a>
+          <a class="route-card" href="#langkah-2-buat-tiga-pemeriksaan-otomatis"><span class="eyebrow">02 &middot; Analyze</span><strong>Jalankan 3 tes</strong><small>Semua harus lulus</small></a>
+          <a class="route-card" href="#langkah-3-tambahkan-aturan-baru-melalui-tes"><span class="eyebrow">03 &middot; Kebutuhan</span><strong>Tambah 1 tes</strong><small>Gagal karena aturan baru</small></a>
+          <a class="route-card" href="#langkah-4-ubah-program-sesuai-aturan-baru"><span class="eyebrow">04 &middot; Repair</span><strong>Sesuaikan kode</strong><small>4 tes lulus, tes tetap</small></a>
+        </div>
+      </section>
+      <div class="content-divider">Panduan lengkap</div>
+      <article id="guide-content" aria-label="Materi lengkap demo Copilot">
+<details class="source-intro"><summary>Tentang materi &amp; cara menggunakan panduan</summary><p>Demo sederhana untuk belajar <strong>memberi instruksi yang jelas</strong>, <strong>memecah tugas</strong>,
+dan <strong>memeriksa hasil kerja Copilot</strong>.</p>
+<ul>
+<li><strong>Waktu:</strong> sekitar 10-15 menit untuk demo langsung.</li>
+<li><strong>Alat:</strong> VS Code, Copilot Chat, dan Python 3.11 atau lebih baru.</li>
+<li><strong>Tidak perlu:</strong> memasang paket Python tambahan atau membangun Windows Terminal.</li>
+</ul>
+<p><strong>Cara memakai panduan:</strong> Saat presentasi, ikuti
+<a href="#langkah-0-buka-folder-yang-benar">Langkah 0</a> sampai
+<a href="#langkah-4-ubah-program-sesuai-aturan-baru">Langkah 4</a>, lalu sampaikan
+<a href="#kalimat-penutup-untuk-peserta">penutup</a>.
+Bagian penjelasan kode dan contoh lengkap adalah bahan persiapan pembawa demo.</p>
+<p>Untuk versi Markdown, gunakan <strong>Ctrl+Shift+V</strong> di VS Code. Versi HTML ini bisa dibuka langsung di browser.</p>
+</details><section class="guide-section" aria-labelledby="apa-tujuan-demo-ini"><p class="chapter-label">01 / Orientasi</p><h2 id="apa-tujuan-demo-ini">Apa tujuan demo ini?</h2>
+<div class="markdown-alert markdown-alert-important">
+<p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Penting</p>
+<p><strong>Tujuan utama: belajar mengarahkan Copilot, bukan sekadar mendapatkan kode.</strong></p>
+<p>Kita memberi tugas kecil, memeriksa hasilnya, lalu menentukan langkah berikutnya
+berdasarkan bukti. Kita tidak langsung menganggap jawaban Copilot pasti benar.</p>
+<p>Setelah demo, peserta diharapkan bisa:</p>
+<ol>
+<li>Menjelaskan pekerjaan dengan contoh hasil yang diinginkan.</li>
+<li>Meminta satu perubahan kecil dan memeriksanya.</li>
+<li>Menambahkan kebutuhan baru tanpa mengubah semua hal sekaligus.</li>
+<li>Memakai pesan kegagalan nyata untuk memberi arahan berikutnya.</li>
+</ol>
+</div>
+<h3 id="beberapa-istilah-yang-akan-dipakai">Beberapa istilah yang akan dipakai</h3>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Istilah</th>
+<th>Arti sederhana</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt</td>
+<td>Pesan berisi tugas yang kita berikan kepada Copilot</td>
+</tr>
+<tr>
+<td>Fungsi</td>
+<td>Bagian program yang menerima data, mengerjakan sesuatu, lalu memberikan hasil</td>
+</tr>
+<tr>
+<td>Tes</td>
+<td>Pemeriksaan otomatis dengan contoh dan jawaban yang sudah kita tentukan</td>
+</tr>
+<tr>
+<td>Lulus</td>
+<td>Hasil program sama dengan jawaban yang diharapkan dalam tes</td>
+</tr>
+<tr>
+<td>Gagal</td>
+<td>Hasil program berbeda dari jawaban yang diharapkan dalam tes</td>
+</tr>
+</tbody>
+</table></div>
+<p>Bayangkan seorang <strong>petugas toko</strong> membaca daftar belanja. Program adalah cara
+kerjanya. Tes adalah contoh daftar belanja beserta kunci jawabannya.</p>
+</section>
+<section class="guide-section" aria-labelledby="cerita-yang-dipakai"><p class="chapter-label">02 / Skenario</p><h2 id="cerita-yang-dipakai">Cerita yang dipakai</h2>
+<p>Kita meminta petugas toko mencari nama barang yang ditulis lebih dari satu kali.
+Barang seperti ini disebut <strong>duplikat</strong>, atau barang yang berulang.</p>
+<p>Dalam contoh program, <code>milk</code> berarti susu dan <code>bread</code> berarti roti. Nama ini
+tetap dipakai agar contoh, kode, dan tes tidak berbeda.</p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">Daftar belanja: [&quot;milk&quot;, &quot;bread&quot;, &quot;milk&quot;]
+Hasil:         [&quot;milk&quot;]
+</code></pre></div>
+<p>Awalnya, petugas diminta membandingkan tulisan <strong>persis seperti yang tertulis</strong>.
+Jadi <code>&quot;Milk&quot;</code> dan <code>&quot;milk&quot;</code> masih dianggap berbeda.</p>
+<p>Lalu pelanggan meminta aturan baru:</p>
+<blockquote>
+<p>&quot;Kalau hanya berbeda huruf besar dan kecil, anggap itu barang yang sama.
+Tetapi tulis hasilnya mengikuti nama yang muncul pertama kali.&quot;</p>
+</blockquote>
+<p>Dengan aturan baru, <code>[&quot;Milk&quot;, &quot;bread&quot;, &quot;milk&quot;]</code> menghasilkan <code>[&quot;Milk&quot;]</code>.</p>
+<p><strong>Penting:</strong> Versi awal tidak salah. Versi awal sudah mengikuti aturan awal.
+Tes baru akan gagal karena aturan baru memang belum dikerjakan.</p>
+</section>
+<section class="guide-section" aria-labelledby="mengapa-tugas-perlu-dipecah"><p class="chapter-label">03 / Metode</p><h2 id="mengapa-tugas-perlu-dipecah">Mengapa tugas perlu dipecah?</h2>
+<p><strong>Dekomposisi</strong> artinya memecah satu pekerjaan menjadi beberapa langkah kecil.
+Setiap langkah punya hasil yang bisa diperiksa sebelum kita lanjut.</p>
+<p>Dalam demo ini, alurnya:</p>
+<p><strong>Buat program -&gt; Periksa -&gt; Tambahkan kebutuhan baru -&gt; Ubah program -&gt; Periksa lagi.</strong></p>
+<p>Cara ini juga mengenalkan <strong>GAR: Generate -&gt; Analyze -&gt; Repair</strong>.
+Dalam bahasa sederhana: <strong>Buat -&gt; Periksa -&gt; Perbaiki</strong>.</p>
+<h3 id="apa-keuntungannya">Apa keuntungannya?</h3>
+<ul>
+<li><strong>Arahan lebih jelas.</strong> Copilot tahu apa yang harus dikerjakan sekarang.</li>
+<li><strong>Lebih mudah diperiksa.</strong> Kita melihat satu perubahan kecil, bukan banyak hal sekaligus.</li>
+<li><strong>Lebih mudah mencari penyebab masalah.</strong> Salah folder berbeda dengan salah hasil perhitungan.</li>
+<li><strong>Kemajuan terlihat.</strong> Kita punya hasil tes, bukan hanya jawaban &quot;sudah selesai&quot;.</li>
+<li><strong>Perilaku lama ikut dijaga.</strong> Tes lama membantu memeriksa apakah perubahan baru merusak hasil sebelumnya.</li>
+</ul>
+<p>Ini bukan jaminan program selalu benar atau pekerjaan selalu lebih cepat.
+Kita tetap harus membaca perubahan dan memeriksa hasilnya.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Beri petugas toko satu aturan, periksa jawabannya, baru tambahkan aturan lain.</p>
+</blockquote>
+</section>
+<section class="guide-section" aria-labelledby="folder-dan-file-yang-dipakai"><p class="chapter-label">04 / Lingkungan kerja</p><h2 id="folder-dan-file-yang-dipakai">Folder dan file yang dipakai</h2>
+<p>Panduan ini memakai lokasi yang benar-benar ada di komputer latihan Anda:</p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">C:\clients\Organization\demo\fundamental\terminal\
+    tools\
+        copilot-prompting-demo\
+            README.md
+            demo1\
+                duplicates.py
+                test_duplicates.py
+</code></pre></div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>File atau folder</th>
+<th>Kegunaannya</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="README.md">README.md</a></td>
+<td>Panduan yang sedang Anda baca; bukan program yang dijalankan</td>
+</tr>
+<tr>
+<td><a href="demo1/">demo1</a></td>
+<td>Tempat menyimpan file latihan dan menjalankan semua perintah demo</td>
+</tr>
+<tr>
+<td><a href="demo1/duplicates.py">duplicates.py</a></td>
+<td>Program yang mencari barang berulang</td>
+</tr>
+<tr>
+<td><a href="demo1/test_duplicates.py">test_duplicates.py</a></td>
+<td>Tes yang memeriksa jawaban program</td>
+</tr>
+</tbody>
+</table></div>
+<p>Nama file, nama fungsi, dan perintah Python tidak diterjemahkan. Nama tersebut
+harus tetap sama agar program bisa dipanggil dengan benar.</p>
+<h3 id="mengapa-sebelumnya-file-tidak-ditemukan">Mengapa sebelumnya file tidak ditemukan?</h3>
+<p>Sebelumnya, file dibuat di folder <code>demo1</code> yang berbeda dari folder pada terminal.
+Nama foldernya sama, tetapi lokasinya tidak sama.</p>
+<p>Untuk perintah <code>python -c</code>, Python mencari file di folder terminal yang sedang
+aktif dan lokasi pencarian Python lainnya. Python tidak mencari sendiri ke
+semua folder dalam proyek.</p>
+<p>Perhatikan perbedaannya:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Istilah</th>
+<th>Maksudnya</th>
+<th>Yang perlu diperhatikan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workspace</td>
+<td>Folder yang dibuka di VS Code</td>
+<td>Copilot dapat mengartikan lokasi file berdasarkan folder ini</td>
+</tr>
+<tr>
+<td>Folder terminal</td>
+<td>Lokasi yang terlihat pada baris <code>PS C:\...&gt;</code></td>
+<td>Perintah dan pencarian file lokal dimulai dari sini</td>
+</tr>
+<tr>
+<td>Lokasi tujuan file</td>
+<td>Alamat lengkap tempat file harus dibuat</td>
+<td>Sebutkan alamat ini agar Copilot tidak memilih folder yang salah</td>
+</tr>
+</tbody>
+</table></div>
+<p>Berpindah folder di terminal tidak otomatis mengganti folder kerja percakapan
+Copilot. Karena itu, setiap prompt di bawah menyebutkan alamat folder lengkap.</p>
+<p>Jika memakai komputer atau folder lain, ganti alamat pada perintah persiapan,
+<strong>keempat prompt</strong>, dan perintah bantuan. Nama kedua file Python tetap sama.</p>
+</section>
+<section class="guide-section step-section" aria-labelledby="langkah-0-buka-folder-yang-benar"><p class="chapter-label">Langkah 00 / Siapkan workspace</p><h2 id="langkah-0-buka-folder-yang-benar">Langkah 0: Buka folder yang benar</h2><div class="step-status">Target: folder kerja benar + Python 3.11 atau lebih baru</div>
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Fokus langkah</p>
+<p><strong>Fokus Langkah 0: pastikan kita bekerja di tempat yang sama.</strong></p>
+<p>Copilot harus membuat file di folder tempat Python mencarinya. Hasil langkah
+ini adalah satu folder kerja yang jelas untuk seluruh demo.</p>
+</div>
+<p><strong>Buka:</strong> VS Code -&gt; Terminal -&gt; New Terminal. Gunakan PowerShell.</p>
+<p><strong>Jalankan:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">$demoPath = &quot;C:\clients\Organization\demo\fundamental\terminal\tools\copilot-prompting-demo\demo1&quot;
+New-Item -ItemType Directory -Path $demoPath -Force | Out-Null
+Set-Location -LiteralPath $demoPath
+code --new-window $demoPath
+</code></pre></div>
+<p>Perintah ini membuat folder jika belum ada, masuk ke folder tersebut, lalu
+membukanya di jendela VS Code baru. File yang sudah ada tidak dihapus.</p>
+<p>Jika perintah <code>code</code> tidak tersedia, pilih File -&gt; New Window, lalu
+File -&gt; Open Folder, dan buka folder <code>demo1</code> pada alamat tersebut.</p>
+<p>Di jendela baru, buka Copilot Chat dan pilih mode <strong>Agent</strong> agar Copilot bisa
+mengubah file. Mulai percakapan baru, lalu buka Terminal -&gt; New Terminal.</p>
+<p><strong>Periksa sebelum mulai:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">Get-Location
+python --version
+</code></pre></div>
+<p>Hasil <code>Get-Location</code> harus menunjukkan:</p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">C:\clients\Organization\demo\fundamental\terminal\tools\copilot-prompting-demo\demo1
+</code></pre></div>
+<p>Gunakan Python 3.11 atau lebih baru. Jika komputer Anda memakai <code>python3</code> atau
+<code>py -3</code>, gunakan perintah itu sebagai pengganti <code>python</code> secara konsisten.
+Folder <code>__pycache__</code> mungkin muncul setelah program dipakai. Itu normal.</p>
+<p><strong>Untuk melanjutkan latihan yang sudah ada:</strong> Cocokkan isi file dengan
+<a href="#ringkasan-alur-demo">ringkasan alur</a>. Tiga tes adalah kondisi akhir Langkah 2.
+Empat tes dengan program yang masih membedakan huruf besar dan kecil adalah
+kondisi akhir Langkah 3. Tidak perlu membuat ulang file yang sudah sesuai.</p>
+<p><strong>Untuk mengulang dari awal:</strong> Gunakan folder kosong, misalnya <code>demo2</code> di sebelah
+<code>demo1</code>. Ganti alamat pada semua prompt dan perintah. Jangan menghapus file
+lain atau mengembalikan seluruh proyek hanya untuk mengulang demo.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Letakkan daftar belanja dan kunci jawabannya di meja yang sama.
+Ini mencegah masalah <a href="#file-tidak-ditemukan">salah folder</a>.</p>
+</blockquote>
+</section>
+<section class="guide-section" aria-labelledby="ringkasan-alur-demo"><p class="chapter-label">Peta perjalanan / Generate - Analyze - Repair</p><h2 id="ringkasan-alur-demo">Ringkasan alur demo</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Langkah</th>
+<th>Program pencari barang</th>
+<th>File tes</th>
+<th>Hasil yang diharapkan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Membandingkan tulisan persis sama</td>
+<td>Belum dibuat dalam latihan baru</td>
+<td>Contoh hasilnya sesuai</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Tidak diubah</td>
+<td>Tambah tiga tes</td>
+<td>3 tes lulus</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Tetap tidak diubah</td>
+<td>Tambah satu tes untuk aturan baru</td>
+<td>3 tes lulus, 1 tes gagal</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Ubah agar huruf besar dan kecil dianggap sama</td>
+<td>Tidak diubah</td>
+<td>4 tes lulus</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="hubungan-kode-dan-urutan-langkah">Hubungan kode dan urutan langkah</h3>
+<p>Bagian <a href="#contoh-kode-lengkap-untuk-persiapan">contoh kode lengkap</a> memakai label
+A, B, C, dan D. Itu bukan empat program yang dijalankan terpisah:</p>
+<ol>
+<li><strong>Langkah 1 menghasilkan A:</strong> fungsi yang mengerjakan pencarian.</li>
+<li><strong>Langkah 2 menghasilkan B:</strong> tiga tes yang memanggil fungsi dari A.</li>
+<li><strong>Langkah 3 menambahkan C ke B:</strong> satu tes baru, sementara A tetap sama.</li>
+<li><strong>Langkah 4 mengganti A dengan D:</strong> fungsi diperbarui, lalu diperiksa dengan
+tes B dan C yang sama.</li>
+</ol>
+<p><strong>Alurnya: A -&gt; diperiksa oleh B -&gt; ditambah pemeriksaan C -&gt; A diganti D.</strong></p>
+<p>Saat berpindah langkah, kita memakai hasil langkah sebelumnya. Kita tidak
+memulai tugas yang tidak berhubungan. Perbedaan pesan tugasnya dijelaskan pada
+<a href="#apa-yang-berbeda-pada-prompt-langkah-3-dan-4">perbandingan Langkah 3 dan 4</a>.</p>
+</section>
+<section class="guide-section step-section" aria-labelledby="langkah-1-buat-program-awal"><p class="chapter-label">Langkah 01 / Generate / Buat</p><h2 id="langkah-1-buat-program-awal">Langkah 1: Buat program awal</h2><div class="step-status">Target: hasil awal sesuai, huruf besar dan kecil masih berbeda</div>
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Fokus langkah</p>
+<p><strong>Fokus Langkah 1: membuat cara kerja awal.</strong></p>
+<p>Buat hanya <a href="demo1/duplicates.py">duplicates.py</a>. Program masih membandingkan
+tulisan persis sama. Fungsi ini akan dipakai oleh tes pada Langkah 2.</p>
+</div>
+<p><strong>Sampaikan kepada peserta:</strong></p>
+<blockquote>
+<p>&quot;Saya akan memberi Copilot satu tugas kecil, contoh hasil, dan batasan yang jelas.&quot;</p>
+</blockquote>
+<p><strong>Salin ke Copilot Chat:</strong></p>
+<div class="code-block prompt-block"><div class="code-toolbar"><span>Prompt / Copilot Chat</span><button type="button" class="copy-button needs-js" aria-label="Salin Prompt / Copilot Chat">Salin</button></div><pre><code class="language-text">Kerjakan Langkah 1 saja. Gunakan hanya folder berikut:
+C:\clients\Organization\demo\fundamental\terminal\tools\copilot-prompting-demo\demo1
+
+Buat duplicates.py tepat di folder tersebut, bukan di folder utama proyek
+atau folder lain yang juga bernama demo1.
+
+Buat fungsi find_duplicates(items: list[str]) -&gt; list[str].
+
+Aturannya:
+- Bandingkan tulisan persis sama. &quot;Milk&quot; dan &quot;milk&quot; dianggap berbeda.
+- Kembalikan daftar nama barang yang berulang; setiap nama hanya satu kali.
+- Urutan hasil mengikuti saat barang pertama kali berulang.
+- Contoh: [&quot;milk&quot;, &quot;bread&quot;, &quot;bread&quot;, &quot;milk&quot;, &quot;milk&quot;] menghasilkan [&quot;bread&quot;, &quot;milk&quot;].
+- Daftar kosong atau daftar tanpa barang berulang menghasilkan [].
+- Gunakan fitur bawaan Python saja.
+
+Jangan tambahkan tes atau fitur untuk menerima argumen terminal.
+Jangan samakan huruf besar dan kecil, dan jangan hapus spasi.
+Buat file tersebut, lalu jelaskan cara kerjanya secara singkat.
+</code></pre></div>
+<p>Lihat file yang dibuat Copilot bersama peserta.</p>
+<h3 id="periksa-hasil-awal-di-terminal">Periksa hasil awal di terminal</h3>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">python -c &quot;from duplicates import find_duplicates; print(find_duplicates(['milk', 'bread', 'milk']))&quot;
+python -c &quot;from duplicates import find_duplicates; print(find_duplicates(['Milk', 'milk']))&quot;
+</code></pre></div>
+<p>Hasil kedua perintah tersebut, sesuai urutannya:</p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">['milk']
+[]
+</code></pre></div>
+<p><code>[]</code> berarti tidak ada barang yang dianggap berulang. Pada aturan awal,
+<code>&quot;Milk&quot;</code> dan <code>&quot;milk&quot;</code> memang berbeda.</p>
+<p>Jika perintah kedua sudah menghasilkan <code>[&quot;Milk&quot;]</code>, jangan lanjut seolah-olah
+hasilnya <code>[]</code>. Periksa <a href="#tes-baru-langsung-lulus">mengapa tes baru sudah lulus</a>.</p>
+<p><strong>Yang dipelajari:</strong> Prompt menyebutkan tujuan, contoh jawaban, batasan, dan
+file yang boleh dibuat. Jadi Copilot tidak perlu menebak.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Petugas toko mengikuti tulisan persis seperti yang ada di daftar.</p>
+</blockquote>
+</section>
+<section class="guide-section step-section" aria-labelledby="langkah-2-buat-tiga-pemeriksaan-otomatis"><p class="chapter-label">Langkah 02 / Analyze / Periksa</p><h2 id="langkah-2-buat-tiga-pemeriksaan-otomatis">Langkah 2: Buat tiga pemeriksaan otomatis</h2><div class="step-status">Target: tepat 3 tes lulus</div>
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Fokus langkah</p>
+<p><strong>Fokus Langkah 2: memeriksa aturan yang sudah dibuat.</strong></p>
+<p>Buat hanya <a href="demo1/test_duplicates.py">test_duplicates.py</a>, tanpa mengubah
+program. Tiga tes memanggil fungsi dari Langkah 1 dan harus lulus sebelum
+kita menambahkan kebutuhan baru.</p>
+</div>
+<p><strong>Sampaikan kepada peserta:</strong></p>
+<blockquote>
+<p>&quot;Kode sudah dibuat, tetapi kita tetap perlu memeriksa apakah hasilnya sesuai.&quot;</p>
+</blockquote>
+<p><strong>Salin ke Copilot Chat:</strong></p>
+<div class="code-block prompt-block"><div class="code-toolbar"><span>Prompt / Copilot Chat</span><button type="button" class="copy-button needs-js" aria-label="Salin Prompt / Copilot Chat">Salin</button></div><pre><code class="language-text">Kerjakan Langkah 2 saja. Gunakan hanya folder berikut:
+C:\clients\Organization\demo\fundamental\terminal\tools\copilot-prompting-demo\demo1
+
+Buat test_duplicates.py tepat di folder tersebut.
+Gunakan unittest bawaan Python.
+Impor find_duplicates dari duplicates.
+
+Buat kelas unittest.TestCase bernama DuplicateTests dengan tepat tiga tes:
+1. test_reports_duplicates_once_in_repeat_order:
+   [&quot;milk&quot;, &quot;bread&quot;, &quot;bread&quot;, &quot;milk&quot;, &quot;milk&quot;] menghasilkan [&quot;bread&quot;, &quot;milk&quot;].
+2. test_returns_empty_for_unique_items:
+   [&quot;milk&quot;, &quot;bread&quot;] menghasilkan [].
+3. test_returns_empty_for_empty_input:
+   [] menghasilkan [].
+
+Gunakan self.assertEqual biasa agar jawaban benar-benar diperiksa.
+Jangan gunakan mock, skip, expectedFailure, atau xfail.
+Jangan ubah duplicates.py atau pasang paket tambahan.
+Buat file tes saja. Saya akan menjalankan tesnya sendiri di terminal.
+</code></pre></div>
+<p><strong>Jalankan di terminal:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">python -m unittest -v test_duplicates
+</code></pre></div>
+<p><strong>Hasil yang diharapkan:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">Ran 3 tests ...
+OK
+</code></pre></div>
+<p>Tulisan <code>OK</code> berarti ketiga tes lulus. Waktu pengerjaan dan baris rincian tiap
+tes bisa berbeda.</p>
+<p><strong>Apa yang diperiksa?</strong></p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Tes</th>
+<th>Yang ingin dipastikan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_reports_duplicates_once_in_repeat_order</code></td>
+<td>Urutan benar dan nama yang sama tidak ditambahkan berkali-kali</td>
+</tr>
+<tr>
+<td><code>test_returns_empty_for_unique_items</code></td>
+<td>Barang yang tidak berulang tidak ikut dilaporkan</td>
+</tr>
+<tr>
+<td><code>test_returns_empty_for_empty_input</code></td>
+<td>Daftar kosong menghasilkan daftar kosong</td>
+</tr>
+</tbody>
+</table></div>
+<p>Jika ada tes gagal, cari penyebabnya dulu. Jangan lanjut ke Langkah 3 sebelum
+tiga tes ini lulus. Lihat <a href="#tes-tidak-berjalan">bantuan pemeriksaan</a>.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Beri petugas tiga daftar belanja dan cocokkan jawabannya dengan kunci jawaban.</p>
+</blockquote>
+</section>
+<section class="guide-section step-section" aria-labelledby="langkah-3-tambahkan-aturan-baru-melalui-tes"><p class="chapter-label">Langkah 03 / Analyze / Aturan baru</p><h2 id="langkah-3-tambahkan-aturan-baru-melalui-tes">Langkah 3: Tambahkan aturan baru melalui tes</h2><div class="step-status warning">Target: 3 tes lulus + 1 tes baru gagal karena perbedaan jawaban</div>
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Fokus langkah</p>
+<p><strong>Fokus Langkah 3: tentukan hasil baru yang diinginkan, bukan memperbaiki program dulu.</strong></p>
+<p>Tambahkan satu tes ke <a href="demo1/test_duplicates.py">test_duplicates.py</a>.
+<a href="demo1/duplicates.py">duplicates.py</a> tetap memakai aturan lama.
+Hasil yang diharapkan: tiga tes lama lulus, satu tes baru gagal.
+Pesan kegagalan itulah bahan untuk Langkah 4.</p>
+</div>
+<p><strong>Sampaikan kepada peserta:</strong></p>
+<blockquote>
+<p>&quot;Versi pertama sudah berjalan. Sekarang pelanggan ingin Milk dan milk dianggap
+sama. Kita tulis dulu contoh hasil yang diinginkan, tanpa mengubah programnya.&quot;</p>
+</blockquote>
+<p><strong>Salin ke Copilot Chat:</strong></p>
+<div class="code-block prompt-block"><div class="code-toolbar"><span>Prompt / Copilot Chat</span><button type="button" class="copy-button needs-js" aria-label="Salin Prompt / Copilot Chat">Salin</button></div><pre><code class="language-text">Kerjakan Langkah 3 saja. Gunakan hanya folder berikut:
+C:\clients\Organization\demo\fundamental\terminal\tools\copilot-prompting-demo\demo1
+
+Ubah hanya test_duplicates.py di folder tersebut.
+Ada aturan baru: perbedaan huruf besar dan kecil tidak membedakan barang.
+Hasilnya tetap memakai penulisan nama yang muncul pertama kali.
+
+Tambahkan tepat satu tes biasa ke kelas DuplicateTests yang sudah ada:
+- Nama: test_ignores_case_and_preserves_first_spelling
+- Masukan: [&quot;Milk&quot;, &quot;bread&quot;, &quot;milk&quot;]
+- Hasil yang diharapkan: [&quot;Milk&quot;]
+
+Jangan ubah duplicates.py atau ketiga tes lama.
+Jangan gunakan mock, skip, expectedFailure, atau xfail.
+Ubah file tes saja. Saya akan menjalankannya sendiri di terminal.
+</code></pre></div>
+<p><strong>Jalankan di terminal:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">python -m unittest -v test_duplicates
+</code></pre></div>
+<p><strong>Hasil yang diharapkan:</strong> Empat tes berjalan. Tiga tes lama lulus, tetapi tes
+baru gagal karena program masih memakai aturan lama.</p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">AssertionError: Lists differ: [] != ['Milk']
+...
+Ran 4 tests ...
+FAILED (failures=1)
+</code></pre></div>
+<p>Pesan tersebut berarti program memberikan <code>[]</code>, padahal tes baru mengharapkan
+<code>[&quot;Milk&quot;]</code>. Ini perbedaan jawaban yang nyata, bukan masalah lokasi file.</p>
+<p><strong>Salin pesan kegagalan yang benar-benar muncul</strong> untuk prompt berikutnya.
+Pesan dari Python tetap ditampilkan dalam bahasa aslinya agar mudah dicocokkan.</p>
+<p><strong>Penghubung ke langkah berikutnya:</strong> Langkah 3 sudah menetapkan jawaban yang
+benar, yaitu <code>[&quot;Milk&quot;]</code>. Pada Langkah 4, jawaban itu tetap sama; yang diubah
+adalah cara program menghasilkan jawaban tersebut.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Kunci jawaban sudah memakai aturan baru, tetapi petugas masih
+mengikuti aturan lama. Jangan memakai <a href="#jangan-membuat-kegagalan-palsu">penanda gagal buatan</a>.</p>
+</blockquote>
+</section>
+<section class="guide-section step-section" aria-labelledby="langkah-4-ubah-program-sesuai-aturan-baru"><p class="chapter-label">Langkah 04 / Repair / Perbaiki</p><h2 id="langkah-4-ubah-program-sesuai-aturan-baru">Langkah 4: Ubah program sesuai aturan baru</h2><div class="step-status">Target: 4 tes lulus, tanpa mengubah tes</div>
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Fokus langkah</p>
+<p><strong>Fokus Langkah 4: ubah cara kerja program agar memenuhi tes yang sama.</strong></p>
+<p>Ubah hanya <a href="demo1/duplicates.py">duplicates.py</a>. Keempat tes tidak diubah.
+Gunakan pesan gagal dari Langkah 3 untuk mengarahkan perubahan.
+Hasil yang diharapkan: semua empat tes lulus.</p>
+</div>
+<h3 id="apa-yang-berbeda-pada-prompt-langkah-3-dan-4">Apa yang berbeda pada prompt Langkah 3 dan 4?</h3>
+<p>Yang kita ubah dalam demo ini adalah <strong>prompt pengguna</strong>, yaitu pesan tugas
+yang Anda ketik di Copilot Chat, <strong>bukan system prompt</strong>. Perbedaannya bukan
+sekadar mengganti nomor langkah:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Bagian pesan</th>
+<th>Langkah 3</th>
+<th>Langkah 4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pekerjaan utama</td>
+<td>Tambah contoh pemeriksaan untuk aturan baru</td>
+<td>Ubah program agar memenuhi pemeriksaan itu</td>
+</tr>
+<tr>
+<td>File yang boleh berubah</td>
+<td><a href="demo1/test_duplicates.py">test_duplicates.py</a></td>
+<td><a href="demo1/duplicates.py">duplicates.py</a></td>
+</tr>
+<tr>
+<td>Batasan penting</td>
+<td>Jangan ubah program atau tiga tes lama</td>
+<td>Jangan ubah keempat tes</td>
+</tr>
+<tr>
+<td>Bahan yang diberikan</td>
+<td>Contoh masukan dan jawaban baru yang diinginkan</td>
+<td>Aturan yang sama, ditambah pesan gagal nyata dari Langkah 3</td>
+</tr>
+<tr>
+<td>Hasil yang diharapkan</td>
+<td>3 tes lulus, 1 tes gagal</td>
+<td>4 tes lulus</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Yang tetap sama:</strong> Masukan <code>[&quot;Milk&quot;, &quot;bread&quot;, &quot;milk&quot;]</code> harus menghasilkan
+<code>[&quot;Milk&quot;]</code>. Pada Langkah 3, program belum bisa memberikannya. Pada Langkah 4,
+Copilot diminta menyesuaikan program tanpa mengubah target hasilnya.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Langkah 3 memperbarui kunci jawaban. Langkah 4 memperbarui cara
+kerja petugas agar sesuai dengan kunci jawaban itu.</p>
+</blockquote>
+<p><strong>Salin ke Copilot Chat. Ganti bagian TEMPEL dengan pesan dari terminal Anda:</strong></p>
+<div class="code-block prompt-block"><div class="code-toolbar"><span>Prompt / Copilot Chat</span><button type="button" class="copy-button needs-js" aria-label="Salin Prompt / Copilot Chat">Salin</button></div><pre><code class="language-text">Kerjakan Langkah 4 saja. Gunakan hanya folder berikut:
+C:\clients\Organization\demo\fundamental\terminal\tools\copilot-prompting-demo\demo1
+
+Ubah hanya duplicates.py di folder tersebut untuk memenuhi aturan baru.
+
+Berikut pesan kegagalan tes yang benar-benar muncul:
+
+&lt;TEMPEL PESAN KEGAGALAN DARI TERMINAL DI SINI&gt;
+
+Aturannya:
+- Gunakan str.casefold() agar perbedaan huruf besar dan kecil tidak membedakan barang.
+- Hasil tetap memakai penulisan nama yang muncul pertama kali.
+- Kembalikan daftar nama barang yang berulang; setiap nama hanya satu kali.
+- Urutan hasil mengikuti saat barang pertama kali berulang.
+- Pertahankan find_duplicates(items: list[str]) -&gt; list[str].
+- Jangan ubah tes, pasang paket tambahan, atau tambahkan fitur lain.
+
+Lakukan perubahan seperlunya, lalu jelaskan singkat penyebab tes sebelumnya gagal.
+</code></pre></div>
+<p><strong>Jalankan lagi di terminal:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">python -m unittest -v test_duplicates
+</code></pre></div>
+<p><strong>Hasil yang diharapkan:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">Ran 4 tests ...
+OK
+</code></pre></div>
+<p><strong>Tunjukkan juga hasilnya secara langsung:</strong></p>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">python -c &quot;from duplicates import find_duplicates; print(find_duplicates(['Milk', 'bread', 'milk']))&quot;
+</code></pre></div>
+<p>Hasilnya:</p>
+<div class="code-block"><div class="code-toolbar"><span>Teks / Contoh hasil</span><button type="button" class="copy-button needs-js" aria-label="Salin Teks / Contoh hasil">Salin</button></div><pre><code class="language-text">['Milk']
+</code></pre></div>
+<p>Periksa perubahan Copilot. Pastikan yang diubah adalah program, bukan keempat
+tesnya. Lihat <a href="#tes-diubah-agar-lulus">bantuan bila tes ikut diubah</a>.</p>
+<p>Empat tes lulus berarti empat contoh tersebut sudah sesuai. Itu bukan jaminan
+bahwa semua kemungkinan masukan pasti benar.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Ubah cara kerja petugas, lalu gunakan kunci jawaban yang sama
+untuk memeriksa hasilnya lagi.</p>
+</blockquote>
+</section>
+<section class="guide-section" aria-labelledby="penjelasan-kode-dengan-bahasa-sederhana"><p class="chapter-label">Referensi / Memahami kode</p><h2 id="penjelasan-kode-dengan-bahasa-sederhana">Penjelasan kode dengan bahasa sederhana</h2>
+<h3 id="bedanya-file-program-dan-file-tes">Bedanya file program dan file tes</h3>
+<ul>
+<li><a href="demo1/duplicates.py">duplicates.py</a> <strong>mengerjakan pencarian</strong>.</li>
+<li><a href="demo1/test_duplicates.py">test_duplicates.py</a> <strong>memeriksa hasil pencarian</strong>.</li>
+<li><code>from duplicates import find_duplicates</code> mengambil fungsi dari file program
+agar bisa dipakai oleh tes.</li>
+<li><code>self.assertEqual(hasil, jawaban)</code> membandingkan hasil nyata dengan jawaban
+yang diharapkan. Jika berbeda, tes dinyatakan gagal.</li>
+</ul>
+<p>Tulisan <code>list[str]</code> berarti daftar berisi teks. Tanda <code>-&gt; list[str]</code> berarti
+hasil yang diharapkan juga berupa daftar teks. Penanda ini menjelaskan jenis
+data; Python tidak otomatis memeriksa semua masukan hanya karena penanda itu ada.</p>
+<h3 id="cara-kerja-versi-awal">Cara kerja versi awal</h3>
+<p>Program membaca barang satu per satu dan menyimpan tiga catatan:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Nama dalam kode</th>
+<th>Yang disimpan</th>
+<th>Gunanya</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>seen</code></td>
+<td>Nama yang sudah pernah dibaca</td>
+<td>Mengetahui apakah barang muncul lagi</td>
+</tr>
+<tr>
+<td><code>reported</code></td>
+<td>Nama yang sudah masuk ke hasil</td>
+<td>Mencegah nama yang sama ditambahkan berkali-kali</td>
+</tr>
+<tr>
+<td><code>duplicates</code></td>
+<td>Daftar hasil yang urut</td>
+<td>Menyimpan jawaban yang akan diberikan</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>seen</code> dan <code>reported</code> memakai <strong>set</strong>, yaitu kumpulan yang tidak menyimpan nilai
+sama berkali-kali. Urutan jawaban tidak diambil dari set. Program menambahkan
+hasil ke daftar saat menemukan pengulangan.</p>
+<p>Contoh langkah demi langkah:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Urutan baca</th>
+<th>Barang</th>
+<th>Tindakan</th>
+<th>Hasil sementara</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>&quot;milk&quot;</code></td>
+<td>Baru pertama kali; ingat namanya</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>&quot;bread&quot;</code></td>
+<td>Baru pertama kali; ingat namanya</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>&quot;bread&quot;</code></td>
+<td>Sudah pernah dibaca; masukkan ke hasil</td>
+<td><code>[&quot;bread&quot;]</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>&quot;milk&quot;</code></td>
+<td>Sudah pernah dibaca; masukkan ke hasil</td>
+<td><code>[&quot;bread&quot;, &quot;milk&quot;]</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>&quot;milk&quot;</code></td>
+<td>Sudah ada di hasil; jangan tambahkan lagi</td>
+<td><code>[&quot;bread&quot;, &quot;milk&quot;]</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Mengapa bread lebih dulu? Karena <strong>bread berulang lebih dulu</strong>, walaupun milk
+muncul paling awal. Yang kita urutkan adalah saat pertama kali berulang,
+bukan saat pertama kali muncul.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Petugas punya catatan barang yang pernah dibaca dan catatan
+terpisah untuk barang yang sudah dilaporkan.</p>
+</blockquote>
+<h3 id="apa-yang-berbeda-pada-versi-akhir">Apa yang berbeda pada versi akhir?</h3>
+<p>Versi akhir memakai <code>casefold()</code> untuk membuat teks pembanding yang tidak
+membedakan huruf besar dan kecil. Teks asli tetap disimpan.</p>
+<p>Contohnya, <code>&quot;Milk&quot;</code> dan <code>&quot;milk&quot;</code> sama-sama memakai pembanding <code>&quot;milk&quot;</code>.
+Namun, karena nama pertama adalah <code>&quot;Milk&quot;</code>, hasilnya tetap <code>&quot;Milk&quot;</code>.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Bagian</th>
+<th>Versi awal</th>
+<th>Versi akhir</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cara membandingkan</td>
+<td>Pakai teks persis seperti yang dibaca</td>
+<td>Pakai hasil <code>casefold()</code></td>
+</tr>
+<tr>
+<td>Catatan nama</td>
+<td><code>seen</code> menyimpan nama yang pernah dibaca</td>
+<td><code>first_seen</code> menyimpan pembanding beserta penulisan pertamanya</td>
+</tr>
+<tr>
+<td>Pencegah hasil berulang</td>
+<td><code>reported</code> menyimpan nama persis</td>
+<td><code>reported</code> menyimpan pembanding</td>
+</tr>
+<tr>
+<td>Nama yang masuk hasil</td>
+<td>Nama yang sedang berulang</td>
+<td>Nama asli yang muncul pertama kali</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>first_seen</code> memakai <strong>dictionary</strong>, yaitu catatan pasangan. Misalnya,
+<code>first_seen[&quot;milk&quot;] = &quot;Milk&quot;</code> berarti &quot;untuk pembanding milk, penulisan
+pertamanya adalah Milk&quot;.</p>
+<p>Kedua versi tidak menghapus spasi. Karena itu <code>&quot; milk&quot;</code> dan <code>&quot;milk&quot;</code> tetap
+dianggap berbeda. Daftar kosong juga tetap menghasilkan <code>[]</code>.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Petugas menyamakan cara membandingkan nama, tetapi tetap
+menyalin penulisan pertama dari daftar pelanggan.</p>
+</blockquote>
+<h3 id="arti-perintah-di-terminal">Arti perintah di terminal</h3>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Perintah</th>
+<th>Kegunaannya</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python -c &quot;...&quot;</code></td>
+<td>Menjalankan kode singkat di dalam tanda kutip, misalnya untuk melihat satu jawaban</td>
+</tr>
+<tr>
+<td><code>python -m unittest -v test_duplicates</code></td>
+<td>Menjalankan semua tes dalam file tes dan menampilkan hasil masing-masing</td>
+</tr>
+<tr>
+<td><code>python duplicates.py</code></td>
+<td>Hanya membaca definisi fungsi; tidak menampilkan hasil karena belum ada perintah memanggil dan mencetak jawabannya</td>
+</tr>
+</tbody>
+</table></div>
+<p>Bagian <code>if __name__ == &quot;__main__&quot;:</code> pada file tes memungkinkan kita memakai
+<code>python test_duplicates.py</code> secara langsung. Namun, pada demo ini cukup gunakan
+perintah <code>python -m unittest -v test_duplicates</code> agar caranya konsisten.</p>
+</section>
+<section class="guide-section" aria-labelledby="kalimat-penutup-untuk-peserta"><p class="chapter-label">Penutup / Pesan utama</p><h2 id="kalimat-penutup-untuk-peserta">Kalimat penutup untuk peserta</h2>
+<div class="markdown-alert markdown-alert-important">
+<p class="markdown-alert-title"><svg viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Penting</p>
+<p><strong>Pesan utama yang perlu dibawa pulang</strong></p>
+<p><strong>Pecah tugas -&gt; Periksa hasil -&gt; Lanjut berdasarkan bukti.</strong></p>
+<p>&quot;Kita tidak harus menyelesaikan semua hal dalam satu prompt. Kita beri tugas
+kecil, periksa hasilnya, lalu lanjut berdasarkan bukti. Copilot membantu
+menulis kode, tetapi kita tetap bertanggung jawab memeriksa hasilnya.&quot;</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Yang dipelajari</th>
+<th>Contoh dalam demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instruksi jelas</td>
+<td>Ada nama fungsi, contoh masukan, dan jawaban yang diharapkan</td>
+</tr>
+<tr>
+<td>Memecah tugas</td>
+<td>Program, tes, aturan baru, dan perubahan program dibuat pada langkah terpisah</td>
+</tr>
+<tr>
+<td>Memakai bukti</td>
+<td>Pesan kegagalan nyata dipakai untuk memberi arahan berikutnya</td>
+</tr>
+<tr>
+<td>Membatasi perubahan</td>
+<td>Hanya file yang disebutkan boleh diubah</td>
+</tr>
+<tr>
+<td>Memeriksa ulang</td>
+<td>Tes lama dan tes baru dijalankan bersama</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</section>
+<section class="guide-section" aria-labelledby="contoh-kode-lengkap-untuk-persiapan"><p class="chapter-label">Referensi / Kode persiapan</p><h2 id="contoh-kode-lengkap-untuk-persiapan">Contoh kode lengkap untuk persiapan</h2>
+<p>Jawaban Copilot bisa berbeda antarpercakapan. Gunakan contoh di bawah untuk
+berlatih sebelum presentasi. <strong>Jangan memasukkan versi akhir sebelum Langkah 4.</strong></p>
+<p>Jika memakai kode yang sudah disiapkan, sampaikan dengan jujur:</p>
+<blockquote>
+<p>&quot;Saya memakai contoh awal yang sudah disiapkan agar kita bisa fokus pada cara
+memberi instruksi dan memeriksa hasilnya.&quot;</p>
+</blockquote>
+<h3 id="contoh-a-versi-awal-duplicates.py">Contoh A: versi awal <a href="demo1/duplicates.py">duplicates.py</a></h3>
+<p><strong>Dipakai pada Langkah 1.</strong> Inilah fungsi yang kemudian diperiksa oleh Contoh B.</p>
+<div class="code-block"><div class="code-toolbar"><span>Contoh kode / Python</span><button type="button" class="copy-button needs-js" aria-label="Salin Contoh kode / Python">Salin</button></div><pre><code class="language-python">def find_duplicates(items: list[str]) -&gt; list[str]:
+    seen: set[str] = set()
+    reported: set[str] = set()
+    duplicates: list[str] = []
+
+    for item in items:
+        if item in seen and item not in reported:
+            duplicates.append(item)
+            reported.add(item)
+        seen.add(item)
+
+    return duplicates
+</code></pre></div>
+<h3 id="contoh-b-tiga-tes-awal-di-test_duplicates.py">Contoh B: tiga tes awal di <a href="demo1/test_duplicates.py">test_duplicates.py</a></h3>
+<p><strong>Dipakai pada Langkah 2.</strong> Baris <code>from duplicates import find_duplicates</code>
+menghubungkan file tes ini dengan fungsi pada Contoh A.</p>
+<div class="code-block"><div class="code-toolbar"><span>Contoh kode / Python</span><button type="button" class="copy-button needs-js" aria-label="Salin Contoh kode / Python">Salin</button></div><pre><code class="language-python">import unittest
+
+from duplicates import find_duplicates
+
+
+class DuplicateTests(unittest.TestCase):
+    def test_reports_duplicates_once_in_repeat_order(self):
+        self.assertEqual(
+            find_duplicates([&quot;milk&quot;, &quot;bread&quot;, &quot;bread&quot;, &quot;milk&quot;, &quot;milk&quot;]),
+            [&quot;bread&quot;, &quot;milk&quot;],
+        )
+
+    def test_returns_empty_for_unique_items(self):
+        self.assertEqual(find_duplicates([&quot;milk&quot;, &quot;bread&quot;]), [])
+
+    def test_returns_empty_for_empty_input(self):
+        self.assertEqual(find_duplicates([]), [])
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()
+</code></pre></div>
+<p>Dengan Contoh A dan B, perintah <code>python -m unittest -v test_duplicates</code>
+menghasilkan tiga tes lulus.</p>
+<h3 id="contoh-c-tambahan-satu-tes-untuk-aturan-baru">Contoh C: tambahan satu tes untuk aturan baru</h3>
+<p><strong>Ditambahkan pada Langkah 3.</strong> Ini bukan file baru dan bukan pengganti fungsi.
+Tambahkan bagian ini <strong>di dalam</strong> kelas <code>DuplicateTests</code> pada Contoh B, setelah
+tes lama dan sebelum blok <code>if __name__ == &quot;__main__&quot;:</code>.
+Perhatikan jarak menjorok di awal baris.</p>
+<div class="code-block"><div class="code-toolbar"><span>Contoh kode / Python</span><button type="button" class="copy-button needs-js" aria-label="Salin Contoh kode / Python">Salin</button></div><pre><code class="language-python">    def test_ignores_case_and_preserves_first_spelling(self):
+        self.assertEqual(
+            find_duplicates([&quot;Milk&quot;, &quot;bread&quot;, &quot;milk&quot;]),
+            [&quot;Milk&quot;],
+        )
+</code></pre></div>
+<p>Dengan Contoh A dan keempat tes, tiga tes lama lulus dan tes baru gagal.</p>
+<h3 id="contoh-d-versi-akhir-duplicates.py">Contoh D: versi akhir <a href="demo1/duplicates.py">duplicates.py</a></h3>
+<p><strong>Dipakai pada Langkah 4 untuk mengganti Contoh A di file yang sama.</strong>
+Contoh B beserta tambahan C tetap dipakai tanpa perubahan.</p>
+<div class="code-block"><div class="code-toolbar"><span>Contoh kode / Python</span><button type="button" class="copy-button needs-js" aria-label="Salin Contoh kode / Python">Salin</button></div><pre><code class="language-python">def find_duplicates(items: list[str]) -&gt; list[str]:
+    first_seen: dict[str, str] = {}
+    reported: set[str] = set()
+    duplicates: list[str] = []
+    for item in items:
+        key = item.casefold()
+        if key not in first_seen:
+            first_seen[key] = item
+        elif key not in reported:
+            duplicates.append(first_seen[key])
+            reported.add(key)
+    return duplicates
+</code></pre></div>
+<p>Dengan Contoh D dan keempat tes, semua tes lulus. File tes tidak perlu diubah
+lagi setelah Langkah 3.</p>
+</section>
+<section class="guide-section" aria-labelledby="bantuan-jika-demo-tidak-sesuai"><p class="chapter-label">Bantuan / Troubleshooting</p><h2 id="bantuan-jika-demo-tidak-sesuai">Bantuan jika demo tidak sesuai</h2>
+<h3 id="file-tidak-ditemukan">File tidak ditemukan</h3>
+<p>Pesan <code>ModuleNotFoundError: No module named 'duplicates'</code> biasanya berarti
+file program tidak ada di folder pencarian Python atau namanya tidak sesuai.</p>
+<p>Ulangi <a href="#langkah-0-buka-folder-yang-benar">Langkah 0</a>, lalu jalankan:</p>
+<div class="code-block"><div class="code-toolbar"><span>Terminal / PowerShell</span><button type="button" class="copy-button needs-js" aria-label="Salin Terminal / PowerShell">Salin</button></div><pre><code class="language-powershell">Set-Location -LiteralPath &quot;C:\clients\Organization\demo\fundamental\terminal\tools\copilot-prompting-demo\demo1&quot;
+Get-Location
+Get-ChildItem -Name
+python -c &quot;import duplicates; print(duplicates.__file__)&quot;
+</code></pre></div>
+<p>Perintah terakhir harus menunjukkan alamat file program di folder <code>demo1</code>
+yang benar. Jangan mengubah tes untuk mengatasi kesalahan lokasi.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Petugas tidak bisa membaca daftar yang ditinggal di meja lain.</p>
+</blockquote>
+<h3 id="tes-tidak-berjalan">Tes tidak berjalan</h3>
+<p>Jika <code>python</code> tidak dikenali, gunakan perintah Python yang sudah berhasil pada
+<a href="#langkah-0-buka-folder-yang-benar">Langkah 0</a>.</p>
+<p>Jika muncul <code>Ran 0 tests</code>, periksa nama fungsi tes: harus dimulai dengan <code>test_</code>
+dan berada dalam kelas <code>unittest.TestCase</code>, seperti pada
+<a href="#langkah-2-buat-tiga-pemeriksaan-otomatis">Langkah 2</a>.</p>
+<p>Kesalahan penulisan kode atau file yang tidak ditemukan bukan kegagalan yang
+ingin kita tunjukkan pada Langkah 3.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Kunci jawaban yang belum bisa dibaca berbeda dengan jawaban petugas yang salah.</p>
+</blockquote>
+<h3 id="tes-baru-langsung-lulus">Tes baru langsung lulus</h3>
+<p>Mungkin program sudah menyamakan huruf besar dan kecil, atau ikut diubah saat
+tes baru ditambahkan. Periksa kembali
+<a href="#langkah-1-buat-program-awal">Langkah 1</a> dan Contoh A.</p>
+<p>Jangan menyisipkan kesalahan agar demo terlihat gagal. Untuk mengulang, gunakan
+contoh awal yang dijelaskan secara terbuka di folder latihan baru.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Jika petugas sudah mengikuti aturan baru, tidak ada aturan yang perlu diperbaiki.</p>
+</blockquote>
+<h3 id="jangan-membuat-kegagalan-palsu">Jangan membuat kegagalan palsu</h3>
+<p><code>@unittest.expectedFailure</code> hanya memberi label bahwa tes diharapkan gagal.
+Penanda itu tidak membuat jawaban program menjadi salah. Jika tes justru
+lulus, muncul <code>UNEXPECTED SUCCESS</code>.</p>
+<p>Pada <a href="#langkah-3-tambahkan-aturan-baru-melalui-tes">Langkah 3</a>, gunakan tes biasa.
+Jangan melewati tes, mengganti hasil dengan hasil buatan, atau memberi label
+harus gagal. Inilah alasan prompt melarang <code>skip</code>, <code>mock</code>, <code>expectedFailure</code>,
+dan <code>xfail</code>.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Menempelkan label &quot;harus salah&quot; bukan bukti bahwa jawaban petugas salah.</p>
+</blockquote>
+<h3 id="tes-diubah-agar-lulus">Tes diubah agar lulus</h3>
+<p>Jika jawaban yang diharapkan diubah menjadi <code>[]</code>, aturan baru justru dihapus,
+bukan dikerjakan. Pada <a href="#langkah-4-ubah-program-sesuai-aturan-baru">Langkah 4</a>,
+pertahankan keempat tes dan ubah programnya saja.</p>
+<p>Jika hasilnya <code>[&quot;milk&quot;]</code>, bukan <code>[&quot;Milk&quot;]</code>, program belum menjaga penulisan
+pertama. Lihat pemakaian <code>first_seen</code> pada Contoh D.</p>
+<blockquote>
+<p><strong>Ibaratnya:</strong> Perbaiki cara kerja petugas, bukan kunci jawabannya.</p>
+</blockquote>
+</section>
+<section class="guide-section" aria-labelledby="hasil-pemeriksaan-panduan"><p class="chapter-label">Referensi / Bukti pemeriksaan materi sumber</p><h2 id="hasil-pemeriksaan-panduan">Hasil pemeriksaan panduan</h2>
+<p>Contoh kode pada panduan ini diperiksa di Windows dengan Python 3.13.14.
+Pemeriksaan dilakukan pada salinan sementara, bukan dengan mengubah file
+latihan Anda.</p>
+<p>Perintah yang dipakai: <code>python -m unittest -v test_duplicates</code>.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Tabel panduan; geser ke samping bila diperlukan"><table>
+<thead>
+<tr>
+<th>Contoh yang dipakai</th>
+<th>Hasil</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A dan B</td>
+<td>3 tes lulus</td>
+</tr>
+<tr>
+<td>A, B, dan tambahan C</td>
+<td>4 tes berjalan; hanya tes baru yang gagal</td>
+</tr>
+<tr>
+<td>D, B, dan tambahan C</td>
+<td>4 tes lulus tanpa mengubah tes</td>
+</tr>
+</tbody>
+</table></div>
+<p>Contoh A dan B menggambarkan akhir Langkah 2. Contoh A, B, dan tambahan C
+menggambarkan akhir Langkah 3. Pemeriksaan panduan tidak mengubah file latihan
+Anda ke versi akhir. Lokasi folder, tautan, dan perintah pada panduan juga
+diperiksa. Hasil Copilot saat demo langsung bisa berbeda, jadi tetap baca dan
+periksa perubahan yang dibuatnya.</p>
+</section>
+<section class="guide-section" aria-labelledby="daftar-periksa-sebelum-presentasi"><p class="chapter-label">Persiapan / Sebelum tampil</p><h2 id="daftar-periksa-sebelum-presentasi">Daftar periksa sebelum presentasi</h2>
+<div class="checklist-meter"><span id="checklist-count" aria-live="polite">0 dari 8 persiapan selesai</span><progress id="checklist-progress" max="8" value="0" aria-label="Kemajuan checklist persiapan"></progress></div><p class="source-link">Centang saat persiapan selesai. Checklist direset ketika halaman dimuat ulang.</p><ul class="checklist">
+<li><label><input type="checkbox"><span> Folder terminal dan lokasi file sudah sama.</span></label></li>
+<li><label><input type="checkbox"><span> Python dan Copilot sudah bisa dipakai.</span></label></li>
+<li><label><input type="checkbox"><span> Jika latihan diulang dari awal, semua alamat sudah diganti ke folder baru.</span></label></li>
+<li><label><input type="checkbox"><span> Versi awal masih menganggap <code>&quot;Milk&quot;</code> dan <code>&quot;milk&quot;</code> berbeda.</span></label></li>
+<li><label><input type="checkbox"><span> Sudah mencoba alur: <strong>3 tes lulus -&gt; 1 dari 4 tes gagal -&gt; 4 tes lulus</strong>.</span></label></li>
+<li><label><input type="checkbox"><span> Kegagalan Langkah 3 adalah perbedaan jawaban, bukan file tidak ditemukan.</span></label></li>
+<li><label><input type="checkbox"><span> Contoh kode persiapan sudah tersedia, tetapi versi akhir belum dipasang terlalu awal.</span></label></li>
+<li><label><input type="checkbox"><span> Anda sudah membaca program dan tesnya sendiri.</span></label></li>
+</ul>
+</section>
+      </article>
+      <footer class="footer">
+        <div><strong>Instruksi jelas. Perubahan kecil. Bukti nyata.</strong><p>Panduan HTML ini adalah salinan materi README saat dibuat. Demo Copilot tetap dijalankan di VS Code, bukan di halaman ini. Angka hasil tes dalam materi adalah contoh, bukan hasil eksekusi langsung.</p></div>
+        <a class="source-link" href="README.md">Buka sumber Markdown &nearr;</a>
+      </footer>
+    </div>
+  </main>
+  <div class="demo-dock" id="demo-dock" role="group" aria-label="Kontrol mode demo" hidden>
+    <button class="button" id="previous-step" type="button">&larr; Sebelumnya</button>
+    <div class="dock-label">Mode demo<strong id="demo-position" aria-live="polite">Langkah 0 dari 4</strong></div>
+    <button class="button primary" id="next-step" type="button">Berikutnya &rarr;</button>
+  </div>
+  <div class="toast" id="status" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script>
+    (() => {
+      "use strict";
+      document.documentElement.classList.add("js");
+
+      const body = document.body;
+      const stepSections = [...document.querySelectorAll(".step-section")];
+      const navLinks = [...document.querySelectorAll(".nav-link")];
+      const demoToggle = document.getElementById("demo-toggle");
+      const dock = document.getElementById("demo-dock");
+      const previousButton = document.getElementById("previous-step");
+      const nextButton = document.getElementById("next-step");
+      const position = document.getElementById("demo-position");
+      const menuToggle = document.getElementById("menu-toggle");
+      const status = document.getElementById("status");
+      let stepIndex = 0;
+      let demoMode = false;
+      let statusTimer;
+      let lastStepTrigger = null;
+
+      function announce(message) {
+        clearTimeout(statusTimer);
+        status.textContent = message;
+        statusTimer = setTimeout(() => { status.textContent = ""; }, 5500);
+      }
+
+      function setMenu(open) {
+        body.classList.toggle("menu-open", open);
+        menuToggle.setAttribute("aria-expanded", String(open));
+        menuToggle.setAttribute("aria-label", open ? "Tutup navigasi panduan" : "Buka navigasi panduan");
+        document.querySelector("main").inert = open && window.matchMedia("(max-width: 980px)").matches;
+      }
+
+      function highlight(id) {
+        navLinks.forEach(link => {
+          if (link.hash === "#" + id) link.setAttribute("aria-current", "location");
+          else link.removeAttribute("aria-current");
+        });
+      }
+
+      function currentStepId() {
+        return stepSections[stepIndex].querySelector("h2").id;
+      }
+
+      function showStep(index, focusHeading = false) {
+        stepIndex = Math.max(0, Math.min(stepSections.length - 1, index));
+        stepSections.forEach((section, i) => section.classList.toggle("current-step", i === stepIndex));
+        position.textContent = `Langkah ${stepIndex} dari ${stepSections.length - 1}`;
+        previousButton.disabled = stepIndex === 0;
+        nextButton.disabled = stepIndex === stepSections.length - 1;
+        highlight(currentStepId());
+        if (focusHeading) {
+          const heading = stepSections[stepIndex].querySelector("h2");
+          heading.setAttribute("tabindex", "-1");
+          heading.focus({ preventScroll: true });
+          heading.scrollIntoView({ block: "start" });
+        }
+      }
+
+      function setDemoMode(enabled, focusHeading = true) {
+        demoMode = enabled;
+        body.classList.toggle("demo-mode", enabled);
+        demoToggle.setAttribute("aria-pressed", String(enabled));
+        demoToggle.textContent = enabled ? "Keluar mode demo" : "Mode demo";
+        dock.hidden = !enabled;
+        setMenu(false);
+        if (enabled) {
+          lastStepTrigger = document.activeElement;
+          showStep(stepIndex, focusHeading);
+        } else {
+          const heading = stepSections[stepIndex].querySelector("h2");
+          heading.scrollIntoView({ block: "start" });
+          if (focusHeading) demoToggle.focus({ preventScroll: true });
+        }
+      }
+
+      function navigateToHash(focusHeading = false) {
+        const id = decodeURIComponent(location.hash.slice(1));
+        const target = document.getElementById(id);
+        if (!target) return;
+        const step = target.closest(".step-section");
+        if (step) {
+          stepIndex = stepSections.indexOf(step);
+          if (demoMode) showStep(stepIndex, focusHeading);
+        } else if (demoMode) {
+          setDemoMode(false, false);
+        }
+        setMenu(false);
+        target.scrollIntoView({ block: "start" });
+      }
+
+      menuToggle.addEventListener("click", () => setMenu(!body.classList.contains("menu-open")));
+      demoToggle.addEventListener("click", () => {
+        if (!demoMode) {
+          const atHash = document.getElementById(decodeURIComponent(location.hash.slice(1)))?.closest(".step-section");
+          const visibleStep = stepSections.find(section => {
+            const rect = section.getBoundingClientRect();
+            return rect.top <= 160 && rect.bottom > 160;
+          });
+          const candidate = visibleStep || atHash;
+          if (candidate) stepIndex = stepSections.indexOf(candidate);
+        }
+        setDemoMode(!demoMode);
+      });
+      previousButton.addEventListener("click", () => {
+        showStep(stepIndex - 1, true);
+        location.hash = currentStepId();
+      });
+      nextButton.addEventListener("click", () => {
+        showStep(stepIndex + 1, true);
+        location.hash = currentStepId();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          if (body.classList.contains("menu-open")) {
+            setMenu(false);
+            menuToggle.focus();
+          } else if (demoMode) {
+            setDemoMode(false);
+            if (lastStepTrigger?.isConnected) lastStepTrigger.focus({ preventScroll: true });
+          }
+        }
+      });
+      document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener("click", () => {
+          const target = document.getElementById(link.hash.slice(1));
+          if (demoMode && target) {
+            const step = target.closest(".step-section");
+            if (step) showStep(stepSections.indexOf(step), true);
+            else setDemoMode(false, false);
+          }
+          setMenu(false);
+        });
+      });
+      window.addEventListener("hashchange", () => navigateToHash(true));
+
+      const headings = navLinks.map(link => document.getElementById(link.hash.slice(1))).filter(Boolean);
+      let scrollPending = false;
+      function updateReading() {
+        scrollPending = false;
+        if (demoMode) return;
+        let current = "mulai";
+        let nearestTop = -Infinity;
+        for (const heading of headings) {
+          const top = heading.getBoundingClientRect().top;
+          if (top <= 170 && top > nearestTop) {
+            current = heading.id;
+            nearestTop = top;
+          }
+        }
+        highlight(current);
+      }
+      window.addEventListener("scroll", () => {
+        if (!scrollPending) {
+          scrollPending = true;
+          requestAnimationFrame(updateReading);
+        }
+      }, { passive: true });
+
+      async function copyCode(button) {
+        const code = button.closest(".code-block").querySelector("code");
+        const text = code.textContent.replace(/\n$/, "");
+        let copied = false;
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            copied = true;
+          } catch (error) {
+            console.warn("Clipboard browser tidak tersedia; mencoba penyalinan lokal.", error);
+          }
+        }
+        if (!copied) {
+          const field = document.createElement("textarea");
+          field.value = text;
+          field.setAttribute("aria-label", "Teks yang akan disalin");
+          field.style.cssText = "position:fixed;left:0;top:0;width:1px;height:1px;opacity:0";
+          document.body.append(field);
+          field.select();
+          try {
+            copied = document.execCommand("copy");
+          } catch (error) {
+            console.warn("Penyalinan lokal ditolak browser.", error);
+          } finally {
+            field.remove();
+            button.focus({ preventScroll: true });
+          }
+        }
+        if (copied) {
+          button.textContent = "Tersalin";
+          announce("Teks berhasil disalin. Tempelkan ke Copilot Chat atau terminal sesuai petunjuk.");
+          setTimeout(() => { button.textContent = "Salin"; }, 2000);
+        } else {
+          const range = document.createRange();
+          range.selectNodeContents(code);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          announce("Browser menolak penyalinan otomatis. Teks sudah dipilih; tekan Ctrl+C atau gunakan menu Salin.");
+        }
+      }
+      document.querySelectorAll(".copy-button").forEach(button => {
+        button.addEventListener("click", () => copyCode(button));
+      });
+
+      const checklist = [...document.querySelectorAll(".checklist input")];
+      const checklistCount = document.getElementById("checklist-count");
+      const checklistProgress = document.getElementById("checklist-progress");
+      function updateChecklist() {
+        const checked = checklist.filter(input => input.checked).length;
+        checklistCount.textContent = `${checked} dari ${checklist.length} persiapan selesai`;
+        checklistProgress.value = checked;
+      }
+      checklist.forEach(input => input.addEventListener("change", updateChecklist));
+      if (checklistCount) updateChecklist();
+
+      function expandForPrint() {
+        document.querySelectorAll("details").forEach(details => {
+          details.dataset.wasOpen = String(details.open);
+          details.open = true;
+        });
+      }
+      window.addEventListener("beforeprint", expandForPrint);
+      window.addEventListener("afterprint", () => {
+        document.querySelectorAll("details").forEach(details => {
+          details.open = details.dataset.wasOpen === "true";
+        });
+      });
+      document.getElementById("print-guide").addEventListener("click", () => window.print());
+      window.addEventListener("resize", () => {
+        if (window.innerWidth > 980) setMenu(false);
+        updateReading();
+      });
+      navigateToHash();
+      updateReading();
+    })();
+  </script>
+</body>
+</html>

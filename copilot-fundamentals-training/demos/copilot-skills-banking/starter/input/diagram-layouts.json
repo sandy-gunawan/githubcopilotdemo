@@ -1,0 +1,104 @@
+{
+  "business-process": {
+    "title": "Proses keluhan transfer - baseline 1.0",
+    "description": "SINTETIS. Ack <=15 menit. Data tidak lengkap kembali ke CS; fraud segera ke supervisor; kasus aktif >=120 menit dieskalasi. Close hanya setelah receipt berhasil dan audit.",
+    "width": 1200,
+    "height": 470,
+    "nodes": [
+      { "id": "receive", "x": 20, "y": 95, "w": 160, "h": 100, "lines": ["CS: terima", "Ack <=15 menit"], "tone": "navy" },
+      { "id": "complete", "x": 220, "y": 95, "w": 160, "h": 100, "lines": ["CS: data", "lengkap?"], "shape": "decision", "tone": "mint" },
+      { "id": "fraud", "x": 420, "y": 95, "w": 160, "h": 100, "lines": ["CS: dugaan", "fraud?"], "shape": "decision", "tone": "mint" },
+      { "id": "ops", "x": 620, "y": 95, "w": 160, "h": 100, "lines": ["Operations", "Investigasi", "lalu resolved"], "tone": "teal" },
+      { "id": "notify", "x": 820, "y": 95, "w": 160, "h": 100, "lines": ["CS: receipt", "notifikasi", "berhasil?"], "shape": "decision", "tone": "mint" },
+      { "id": "close", "x": 1020, "y": 95, "w": 160, "h": 100, "lines": ["CS: close", "Receipt + audit"], "tone": "navy" },
+      { "id": "request", "x": 220, "y": 310, "w": 160, "h": 100, "lines": ["CS: minta data", "Jam tetap jalan"], "tone": "neutral" },
+      { "id": "fraud-review", "x": 420, "y": 310, "w": 160, "h": 100, "lines": ["Supervisor", "Review segera", "Lanjut manual"], "tone": "amber" },
+      { "id": "sla-review", "x": 620, "y": 310, "w": 160, "h": 100, "lines": ["Supervisor", "Eskalasi SLA", "Review manual"], "tone": "amber" },
+      { "id": "retry", "x": 820, "y": 310, "w": 160, "h": 100, "lines": ["CS: retry manual", "Tetap terbuka"], "tone": "neutral" }
+    ],
+    "edges": [
+      { "from": "receive", "to": "complete", "points": [[180,145],[220,145]] },
+      { "from": "complete", "to": "fraud", "points": [[380,145],[420,145]], "label": "Ya", "labelX": 400, "labelY": 125 },
+      { "from": "fraud", "to": "ops", "points": [[580,145],[620,145]], "label": "Tidak", "labelX": 600, "labelY": 125 },
+      { "from": "ops", "to": "notify", "points": [[780,145],[820,145]] },
+      { "from": "notify", "to": "close", "points": [[980,145],[1020,145]], "label": "Ya", "labelX": 1000, "labelY": 125 },
+      { "from": "complete", "to": "request", "points": [[300,195],[300,310]], "label": "Tidak", "labelX": 300, "labelY": 255 },
+      { "from": "request", "to": "complete", "points": [[220,360],[198,360],[198,70],[300,70],[300,95]] },
+      { "from": "fraud", "to": "fraud-review", "points": [[500,195],[500,310]], "label": "Ya", "labelX": 500, "labelY": 255 },
+      { "from": "fraud-review", "to": "ops", "points": [[500,410],[500,448],[800,448],[800,70],[700,70],[700,95]] },
+      { "from": "ops", "to": "sla-review", "points": [[700,195],[700,310]], "label": "Aktif >=120m", "labelX": 700, "labelY": 255 },
+      { "from": "sla-review", "to": "ops", "points": [[620,360],[602,360],[602,78],[680,78],[680,95]] },
+      { "from": "notify", "to": "retry", "points": [[900,195],[900,310]], "label": "Tidak", "labelX": 900, "labelY": 255 },
+      { "from": "retry", "to": "notify", "points": [[980,360],[1000,360],[1000,70],[900,70],[900,95]] }
+    ]
+  },
+  "architecture-context": {
+    "title": "C4 Context - declared simulation",
+    "description": "SINTETIS. Nasabah dan staf berinteraksi dengan sistem keluhan. Sistem membaca Core Banking Simulator dan mengirim hasil melalui Notification Stub.",
+    "width": 1200,
+    "height": 470,
+    "nodes": [
+      { "id": "customer", "x": 25, "y": 55, "w": 235, "h": 115, "lines": ["Nasabah sintetis", "Mengajukan keluhan"], "tone": "navy" },
+      { "id": "staff", "x": 25, "y": 295, "w": 235, "h": 115, "lines": ["CS / Ops / Supervisor", "Menangani dan mereview"], "tone": "navy" },
+      { "id": "system", "x": 455, "y": 160, "w": 280, "h": 140, "lines": ["Complaint Handling", "System", "SIMULASI"], "tone": "teal" },
+      { "id": "core", "x": 945, "y": 55, "w": 235, "h": 115, "lines": ["Core Banking Simulator", "Sistem eksternal dummy", "Status read-only"], "tone": "mint" },
+      { "id": "notify", "x": 945, "y": 295, "w": 235, "h": 115, "lines": ["Notification Stub", "Sistem eksternal dummy", "Receipt berhasil/gagal"], "tone": "mint" }
+    ],
+    "edges": [
+      { "from": "customer", "to": "system", "points": [[260,112],[355,112],[355,200],[455,200]], "label": "Keluhan", "labelX": 355, "labelY": 90 },
+      { "from": "staff", "to": "system", "points": [[260,352],[355,352],[355,260],[455,260]], "label": "Review manual", "labelX": 355, "labelY": 385 },
+      { "from": "system", "to": "core", "points": [[735,200],[840,200],[840,112],[945,112]], "label": "GET status", "labelX": 840, "labelY": 90 },
+      { "from": "system", "to": "notify", "points": [[735,260],[840,260],[840,352],[945,352]], "label": "Hasil + receipt", "labelX": 840, "labelY": 385 }
+    ]
+  },
+  "architecture-containers": {
+    "title": "C4 Container - as-is, bukan deployment nyata",
+    "description": "SINTETIS. WEB ke gateway ke Complaint Service. Service menggunakan DB, Audit Store, Core Banking Simulator read-only dan Notification Stub. Belum ada scheduler atau outbox.",
+    "width": 1200,
+    "height": 470,
+    "nodes": [
+      { "id": "web", "x": 20, "y": 180, "w": 195, "h": 110, "lines": ["Portal & CS", "Workspace", "Web UI simulasi"], "tone": "navy" },
+      { "id": "gw", "x": 265, "y": 180, "w": 160, "h": 110, "lines": ["API Gateway", "Routing demo"], "tone": "mint" },
+      { "id": "svc", "x": 475, "y": 180, "w": 205, "h": 110, "lines": ["Complaint Service", "Monolit modular"], "tone": "teal" },
+      { "id": "db", "x": 740, "y": 20, "w": 200, "h": 105, "lines": ["Complaint DB", "PostgreSQL", "Metadata, bukan ledger"], "tone": "mint" },
+      { "id": "core", "x": 980, "y": 20, "w": 200, "h": 105, "lines": ["Core Banking", "Simulator", "GET status saja", "READ-ONLY"], "tone": "amber" },
+      { "id": "notify", "x": 740, "y": 340, "w": 200, "h": 105, "lines": ["Notification Stub", "Retry manual"], "tone": "mint" },
+      { "id": "audit", "x": 980, "y": 340, "w": 200, "h": 105, "lines": ["Audit Store", "Event perubahan status"], "tone": "mint" }
+    ],
+    "edges": [
+      { "from": "web", "to": "gw", "points": [[215,235],[265,235]] },
+      { "from": "gw", "to": "svc", "points": [[425,235],[475,235]] },
+      { "from": "svc", "to": "db", "points": [[545,180],[545,72],[740,72]], "label": "Metadata", "labelX": 650, "labelY": 50 },
+      { "from": "svc", "to": "core", "points": [[680,210],[1080,210],[1080,125]], "label": "GET status", "labelX": 1000, "labelY": 190 },
+      { "from": "svc", "to": "notify", "points": [[550,290],[550,392],[740,392]], "label": "Hasil / receipt", "labelX": 640, "labelY": 370 },
+      { "from": "svc", "to": "audit", "points": [[680,260],[1080,260],[1080,340]], "label": "Audit event", "labelX": 990, "labelY": 285 }
+    ]
+  },
+  "sequence": {
+    "title": "Sequence - close menunggu receipt berhasil",
+    "description": "SINTETIS. Pesan konseptual WEB/Gateway, service, DB dan audit, simulator, dan notification stub. Gagal kirim tidak boleh menghasilkan closed.",
+    "width": 1200,
+    "height": 470,
+    "nodes": [
+      { "id": "web", "x": 15, "y": 15, "w": 200, "h": 70, "lines": ["CS / WEB / Gateway"], "tone": "navy" },
+      { "id": "svc", "x": 255, "y": 15, "w": 200, "h": 70, "lines": ["Complaint Service"], "tone": "teal" },
+      { "id": "db", "x": 495, "y": 15, "w": 200, "h": 70, "lines": ["DB + Audit Store"], "tone": "mint" },
+      { "id": "core", "x": 735, "y": 15, "w": 200, "h": 70, "lines": ["Core Simulator"], "tone": "amber" },
+      { "id": "notify", "x": 975, "y": 15, "w": 210, "h": 70, "lines": ["Notification Stub"], "tone": "mint" }
+    ],
+    "edges": [
+      { "points": [[115,85],[115,460]], "arrow": false, "dashed": true },
+      { "points": [[355,85],[355,460]], "arrow": false, "dashed": true },
+      { "points": [[595,85],[595,460]], "arrow": false, "dashed": true },
+      { "points": [[835,85],[835,460]], "arrow": false, "dashed": true },
+      { "points": [[1080,85],[1080,460]], "arrow": false, "dashed": true },
+      { "from": "web", "to": "svc", "points": [[115,125],[355,125]], "label": "1. Buat kasus", "labelX": 235, "labelY": 110 },
+      { "from": "svc", "to": "db", "points": [[355,170],[595,170]], "label": "2. Simpan + audit", "labelX": 475, "labelY": 155 },
+      { "from": "svc", "to": "core", "points": [[355,220],[835,220]], "label": "3. GET status read-only", "labelX": 610, "labelY": 205 },
+      { "from": "svc", "to": "notify", "points": [[355,275],[1080,275]], "label": "4. Setelah resolved: kirim hasil", "labelX": 740, "labelY": 260 },
+      { "from": "notify", "to": "svc", "points": [[1080,330],[355,330]], "label": "5. Receipt gagal: tetap terbuka, retry manual", "labelX": 720, "labelY": 315 },
+      { "from": "notify", "to": "svc", "points": [[1080,390],[355,390]], "label": "6. Setelah retry berhasil: receipt sukses", "labelX": 720, "labelY": 375 },
+      { "from": "svc", "to": "db", "points": [[355,445],[595,445]], "label": "7. Close + audit", "labelX": 475, "labelY": 430 }
+    ]
+  }
+}

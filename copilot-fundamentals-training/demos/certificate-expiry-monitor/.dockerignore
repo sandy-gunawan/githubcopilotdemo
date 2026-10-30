@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!requirements.txt
+!certificate_monitor/
+!certificate_monitor/**
+**/__pycache__/
+**/*.py[cod]

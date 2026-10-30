@@ -1,0 +1,12 @@
+{
+  "keybindings": [
+    {
+      "keys": "ctrl+c",
+      "command": "copy"
+    },
+    {
+      "keys": "ctrl+c",
+      "command": "copy"
+    }
+  ]
+}

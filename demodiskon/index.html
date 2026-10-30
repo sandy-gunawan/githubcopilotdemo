@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Kalkulator Diskon</title>
+<style>
+  body{font-family:Segoe UI,sans-serif;max-width:360px;margin:40px auto}
+  input,button{display:block;width:100%;margin:8px 0;padding:8px;font-size:16px}
+  #hasil{font-size:20px;font-weight:bold}
+</style>
+</head>
+<body>
+<h1>Kalkulator Diskon</h1>
+<label>Harga (Rp)<input id="harga" type="number"></label>
+<label>Diskon (%)<input id="diskon" type="number"></label>
+<button id="hitung">Hitung</button>
+<button id="reset">Reset</button>
+<p id="hasil"></p>
+<script>
+document.getElementById('hitung').addEventListener('click', function () {
+  const harga = Number(document.getElementById('harga').value);
+  const diskon = Number(document.getElementById('diskon').value);
+  const total = harga - (harga * diskon / 100);
+  document.getElementById('hasil').textContent = 'Total bayar: Rp ' + total.toLocaleString('id-ID');
+});
+document.getElementById('reset').addEventListener('click', function () {
+  document.getElementById('harga').value = '';
+  document.getElementById('diskon').value = '';
+  document.getElementById('hasil').textContent = '';
+});
+</script>
+</body>
+</html>
